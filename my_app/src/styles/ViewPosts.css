@@ -1,0 +1,76 @@
+.view-posts-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .posts-list {
+    margin-top: 20px;
+  }
+  
+  .post {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .post h3 {
+    margin-top: 0;
+  }
+  
+  .author-name button {
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .profile-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .like-button,
+  .comment-icon,
+  .follow-button {
+    margin-right: 10px;
+    cursor: pointer;
+  }
+  
+  .comment-box {
+    margin-top: 10px;
+  }
+  
+  .comment-input {
+    width: calc(100% - 80px);
+    margin-right: 10px;
+  }
+  
+  .comment-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .pagination {
+    margin-top: 20px;
+  }
+  
+  .pagination button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    margin-right: 5px;
+    cursor: pointer;
+  }
+  
+  .pagination button:hover {
+    background-color: #0056b3;
+  }
+  
