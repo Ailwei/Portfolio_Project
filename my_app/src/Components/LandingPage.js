@@ -8,11 +8,12 @@ const LandingPage = () => {
   return (
     <div className="landing-page">
       <header>
-        <h1>Welcome to Our Platform</h1>
+        
         <nav>
           <ul>
             <li><Link to="/login">Login</Link></li>
             <li><Link to="/register">Register</Link></li>
+            <li><Link to="/aboutus">About us</Link></li>
            
            
           </ul>
@@ -27,7 +28,7 @@ const LandingPage = () => {
       </section>
       <section className="features">
         <div className="feature">
-          <h3>Follow Users</h3>
+          <h3>Join Groups/Follow users</h3>
           <p>Stay updated with the latest content from users you follow.</p>
         </div>
         <div className="feature">
@@ -55,7 +56,7 @@ const LandingPage = () => {
         <Link to="/register" className="button">Get Started</Link>
       </section>
       <footer>
-        <p>&copy; 2024 Our Platform. All rights reserved.</p>
+        <p>&copy; 2024 CommHub. All rights reserved.</p>
       </footer>
     </div>
   );

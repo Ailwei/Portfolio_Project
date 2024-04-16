@@ -1,45 +1,96 @@
-.dashboard {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
+/* Dashboard.css */
 
+/* Header */
 .header {
-  background-color: hsl(0, 0%, 20%);
-  color: #fff;
-  padding: 10px;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-}
-
-.logout-button {
-  margin-left: auto;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.sidebar {
-  background-color: #f0f0f0;;
-  padding: 0px;
-  align-items: top;
- 
-}
-
-.main-content {
-  flex-grow: 1;
-  padding: 10px;
-}
-
-.footer {
   background-color: #333;
   color: #fff;
   padding: 10px;
 }
 
+.header h1 {
+  margin: 0;
+}
+
+.header nav {
+  display: flex;
+  align-items: center;
+}
+
+.header nav button,
+.header nav a {
+  margin-right: 10px;
+  color: #fff;
+  text-decoration: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.header nav button:hover,
+.header nav a:hover {
+  text-decoration: underline;
+}
+
+/* Sidebar */
+.sidebar {
+  background-color: #f4f4f4;
+  padding: 10px;
+}
+
+/* Main content */
+.main-content {
+  width: 100%;
+}
+
+.main-content td {
+  vertical-align: top;
+  padding: 10px;
+}
+
+/* Messages */
+.messages-container {
+  padding: 10px;
+  width: 95%;
+  margin: 0 auto;
+}
+
+.messages-container h2 {
+  margin-bottom: 10px;
+}
+
+.message-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.message-list li {
+  margin-bottom: 20px;
+}
+
+/* Search results */
+.search-results {
+  padding: 10px;
+}
+
+.search-results-category {
+  margin-bottom: 20px;
+}
+
+.search-results-category h2 {
+  margin-bottom: 10px;
+}
+
+.search-results-category ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.search-results-category li {
+  margin-bottom: 10px;
+}
+.sidebar {
+  width: 250px; /* Set the width to your desired value */
+  min-width: 250px; /* Ensure a minimum width */
+  max-width: 250px; /* Ensure a maximum width */
+  /* Other styles for the sidebar */
+}

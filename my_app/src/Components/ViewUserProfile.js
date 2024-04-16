@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaUserPlus, FaEnvelope, FaBan, FaCheckCircle } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
-import '../styles/ViewUserProfile.css'
+import defaultProfileImage from '../images/profile_default.png';
+import '../styles/ViewUserProfile.css';
 
-const ViewUserProfile = (LandingPage) => {
+const ViewUserProfile = () => {
   const [profile, setProfile] = useState(null);
   const [authToken, setAuthToken] = useState('');
   const [showMessageInput, setShowMessageInput] = useState(false);
   const [messageContent, setMessageContent] = useState('');
   const { userId, groupId } = useParams();
- 
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -38,56 +38,31 @@ const ViewUserProfile = (LandingPage) => {
 
   const handleBlockUserorUnblockUser = async () => {
     try {
-      if (profile.blocked) {  
-        const response = await axios.post(`http://127.0.0.1:5000/unblock_user`,
-          { user_id: userId, group_id: groupId }, // Use unblock_user endpoint
-          {
-            headers: {
-              Authorization: `Bearer ${authToken}`
-            }
-          }
-        );
-        console.log('User unblocked:', response.data);
-      } else {
-        const response = await axios.post(`http://127.0.0.1:5000/block_user`,
-          { user_id: userId, group_id: groupId },
-          {
-            headers: {
-              Authorization: `Bearer ${authToken}`
-            }
-          }
-        );
-        console.log('User blocked:', response.data);
-      }
+      const response = profile.blocked ? 
+        await axios.post(`http://127.0.0.1:5000/unblock_user`, { user_id: userId, group_id: groupId }, { headers: { Authorization: `Bearer ${authToken}` } }) :
+        await axios.post(`http://127.0.0.1:5000/block_user`, { user_id: userId, group_id: groupId }, { headers: { Authorization: `Bearer ${authToken}` } });
+
+      console.log(profile.blocked ? 'User unblocked:' : 'User blocked:', response.data);
     } catch(error) {
       console.error('Error blocking/unblocking user', error);
     }
   };
-  
 
-  const handleMessageUser = async () => {
+  const handleMessageUser = () => {
     setShowMessageInput(!showMessageInput);
   };
 
   const handleSendMessage = async () => {
-  try {
-    const response = await axios.post(`http://127.0.0.1:5000/send_message/${userId}`, {
-      user_id: userId,
-      content: messageContent
-    }, {
-      headers: {
-        Authorization: `Bearer ${authToken}`
-      }
-    });
-    
-    console.log('Message sent:', response.data);
-    // Clear message content and hide input field after sending
-    setMessageContent('');
-    setShowMessageInput(false);
-  } catch (error) {
-    console.error('Error sending message:', error);
-  }
-};
+    try {
+      const response = await axios.post(`http://127.0.0.1:5000/send_message/${userId}`, { user_id: userId, content: messageContent }, { headers: { Authorization: `Bearer ${authToken}` } });
+      console.log('Message sent:', response.data);
+      setMessageContent('');
+      setShowMessageInput(false);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+  };
+
   if (!profile) {
     return <div>Loading...</div>;
   }
@@ -95,12 +70,16 @@ const ViewUserProfile = (LandingPage) => {
   return (
     <div className="profile">
       <div className="profile-info">
-        <img src={profile.profilePicture} alt="Profile" />
+        {profile.profilePicture ? (
+          <img src={profile.profilePicture} alt="Profile" />
+        ) : (
+          <img src={defaultProfileImage} alt="Default Profile" />
+        )}
         <h2>{profile.fullName}</h2>
         <p>{profile.bio}</p>
       </div>
       <div className="profile-actions">
-      {profile.blocked ? (
+        {profile.blocked ? (
           <button onClick={handleBlockUserorUnblockUser}><FaCheckCircle /> Unblock</button>
         ) : (
           <button onClick={handleBlockUserorUnblockUser}><FaBan /> Block</button>

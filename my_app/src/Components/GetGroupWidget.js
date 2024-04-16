@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link, useParams } from 'react-router-dom';
-import '../styles/GetGroupWidget.css';
-import { AiOutlineConsoleSql } from 'react-icons/ai';
+import { Link } from 'react-router-dom';
 
-const GetGroupWidget = (group_id) => {
+const GetGroupWidget = () => {
   const [userGroups, setUserGroups] = useState([]);
   const [authToken, setAuthToken] = useState('');
- 
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -24,12 +21,7 @@ const GetGroupWidget = (group_id) => {
             Authorization: `Bearer ${authToken}`
           }
         });
-        if (response && response.data && response.data.groups) {
-          // Filter out the groups the user is not a member of
-          
-            const filteredGroups = response.data.groups.filter(group => group.isMember);
-            setUserGroups(filteredGroups);
-          }
+        setUserGroups(response.data.groups);
       } catch (error) {
         console.error('Error fetching user groups:', error);
       }
@@ -38,38 +30,32 @@ const GetGroupWidget = (group_id) => {
     fetchUserGroups();
   }, [authToken]);
 
-
-  const leaveGroup = async (group_id) => {
+  const leaveGroup = async (groupId) => {
     try {
       const response = await axios.post('http://127.0.0.1:5000/leave_group', {
-    
-        group_id: group_id
+        group_id: groupId
       }, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         }
       });
-      console.log(response.data.message); 
-      setUserGroups(prevGroups => prevGroups.filter(group => group.id !== group_id));
+      console.log(response.data.message);
+      setUserGroups(prevGroups => prevGroups.filter(group => group.id !== groupId));
     } catch (error) {
       console.error('Error leaving group:', error);
     }
   };
 
   return (
-    <div className="group-widget">
-    <h2>My Groups</h2>
+    <div>
+      <h3>My Groups</h3>
       <ul>
-        {userGroups.length > 0 ? (
-          userGroups.map(group => (
-            <li key={group.id}>
-              <Link to={`/group/${group.id}`} className="group-link">{group.name}</Link>
-              <button className="leave-button" onClick={() => leaveGroup(group.id)}>Leave</button>
-            </li>
-          ))
-        ) : (
-          <li>No groups found</li>
-        )}
+        {userGroups.map(group => (
+          <li key={group.id}>
+            <Link to={`/group/${group.id}`}>{group.name}</Link>
+            <button onClick={() => leaveGroup(group.id)}>Leave</button> {/* Button to leave the group */}
+          </li>
+        ))}
       </ul>
     </div>
   );

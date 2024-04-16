@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaPlus } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import '../styles/CreateGroupForm.css';
 
-const CreateGroupForm = () => {
+const CreateGroupForm = (toggleCreateGroupForm) => {
   const [groupData, setGroupData] = useState({
     group: '',
     description: '',
   });
   const [error, setError] = useState('');
   const [token, setToken] = useState('');
-  const [showForm, setShowForm] = useState(false);
+  const navigate = useNavigate()
+ 
 
   useEffect(() => {
     const authtoken = localStorage.getItem('authToken');
@@ -25,6 +26,7 @@ const CreateGroupForm = () => {
     // Check if input fields are empty
     if (!groupData.group.trim() || !groupData.description.trim()) {
       setError('Group name and description cannot be empty');
+      navigate('/dashboard')
       return;
     }
 
@@ -49,16 +51,8 @@ const CreateGroupForm = () => {
     }
   };
 
-  const toggleForm = () => {
-    setShowForm(!showForm);
-  };
-
   return (
-    <div>
-      <button className="create-button" onClick={toggleForm}>
-        <FaPlus /> Create Group
-      </button>
-      {showForm && (
+  
         <div className="create-group-form">
           <input
             type="text"
@@ -75,9 +69,8 @@ const CreateGroupForm = () => {
           <button onClick={createGroup}>Create</button>
           {error && <p>{error}</p>}
         </div>
-      )}
-    </div>
-  );
-};
+      );
+    };
+
 
 export default CreateGroupForm;

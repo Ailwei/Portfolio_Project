@@ -1,100 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
+import '../styles/SearchBar.css';
 
-const SearchBar = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [selectedOption, setSelectedOption] = useState('users');
-  const [userGroups, setUserGroups] = useState([]);
-
-  useEffect(() => {
-    fetchUserGroups();
-  }, []);
-
-  const fetchUserGroups = async () => {
-    try {
-      // Fetch user's groups from the backend
-      const response = await axios.get('http://127.0.0.1:5000/view_current_user_profile');
-      setUserGroups(response.data.groups);
-    } catch (error) {
-      console.error('Error fetching user groups:', error);
-    }
-  };
-
-  const searchUsers = async () => {
-    // Implement search users functionality
-  };
-
-  const searchGroups = async () => {
-    // Implement search groups functionality
-  };
-
-  const searchPosts = async () => {
-    // Implement search posts functionality
-  };
+function SearchBar() {
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('all');
+  
+  const [results, setResults] = useState({ users: [], groups: [], posts: [] });
+  const navigate = useNavigate();
 
   const handleSearch = async () => {
-    // Perform search based on selected option
-  };
-
-  const joinGroup = async (groupId) => {
     try {
-      // Implement join group functionality
-      console.log(`Joining group with ID ${groupId}`);
+      console.log('Selected category:', category); 
+      const response = await axios.get(`http://localhost:5000/search?query=${query}&category=${category}`);
+      setResults(response.data);
     } catch (error) {
-      console.error('Error joining group:', error);
+      console.error('Error searching:', error);
     }
-  };
-
-  const leaveGroup = async (groupId) => {
-    try {
-      // Implement leave group functionality
-      console.log(`Leaving group with ID ${groupId}`);
-    } catch (error) {
-      console.error('Error leaving group:', error);
-    }
-  };
-
-  const isMemberOfGroup = (groupId) => {
-    return userGroups.some(group => group.id === groupId);
   };
 
   return (
-    <div className="search-bar-container">
+    <div className="search-container">
       <input
         type="text"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="Search..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Enter your search query"
         className="search-input"
       />
-      <select onChange={(e) => setSelectedOption(e.target.value)}>
+      <select
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        className="search-category"
+      >
+        <option value="all">All</option>
         <option value="users">Users</option>
         <option value="groups">Groups</option>
         <option value="posts">Posts</option>
       </select>
       <button onClick={handleSearch} className="search-button">Search</button>
-
-      <div className="search-results">
-        {searchResults.map(result => (
-          <div key={result.id} className="search-results-item">
-            <div>
-              <Link to={result.link}>{result.title}</Link>
-              {selectedOption === 'groups' && (
-                <div>
-                  {!isMemberOfGroup(result.id) ? (
-                    <button onClick={() => joinGroup(result.id)}>Join Group</button>
-                  ) : (
-                    <button onClick={() => leaveGroup(result.id)}>Leave Group</button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
-};
+}
 
 export default SearchBar;

@@ -3,15 +3,20 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS, cross_origin 
 from models import db, User, Post, Comments, Message, Membership, Group, Reaction, BlockUser
 import secrets
-import os
+import os, stat
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import logging
 import base64
+from werkzeug.utils import secure_filename
 
- 
+
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'src', 'images')
 app.config['JWT_SECRET_KEY'] = 'rT30uDfAqHbF'
 jwt = JWTManager(app)
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root@localhost/portfolioprojectdb'
  
@@ -33,7 +38,6 @@ def hello_world():
 def signup():
     first_name = request.json["first_name"]
     last_name = request.json["last_name"]
-    user_name = request.json["user_name"]
     email = request.json["email"]
     profile_picture = request.json.get("profile_picture", None)
     password = request.json["password"]
@@ -45,19 +49,12 @@ def signup():
     if user_email_exists:
         return jsonify({"error": "Email already exists"}), 409
     
-    
-    user_name_exists = User.query.filter_by(user_name=user_name).first() is not None
-    
-    if user_name_exists:
-        return jsonify({"error": "Username already exists"}), 409
-    
    # hashed_password = bcrypt.generate_password_hash(password)
     #hashed_comfirm_password = bcrypt.generate_password_hash(comfirm_password)
     
     new_user = User(
     first_name=first_name,
     last_name=last_name,
-    user_name=user_name,
     email=email,
     password=password,
     comfirm_password=comfirm_password,
@@ -83,9 +80,13 @@ def get_user_profile():
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
+    profile_picture_base64 = ''
+    if user.profile_picture:
+        profile_picture_base64 = base64.b64encode(user.profile_picture).decode('utf-8')
+    
     profile = {
         'fullName': f'{user.first_name} {user.last_name}',
-        'profilePicture': user.profile_picture,
+        'profilePicture': profile_picture_base64,
         'groups': [{'id': group.group_id, 'name': group.group_name} for group in user.group],
         'memberships': [{'id': membership.member_id, 'groupName': membership.group.group_name} for membership in user.membership],
         'ownedGroups': [{'id': owned_group.group_id, 'name': owned_group.group_name} for owned_group in user.group if owned_group.user_id == current_user_id]
@@ -136,68 +137,56 @@ def login_user():
     access_token = create_access_token(identity=user.user_id)
     return jsonify({"access_token": access_token}), 200
 
-@app.route('/update_profile', methods=['GET', 'POST', 'PUT'])
+@app.route('/update_profile', methods=['GET', 'POST'])
 @jwt_required()
-def update_profile():
+def get_or_update_profile():
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
 
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
-    # For GET request, return user data (excluding sensitive fields)
     if request.method == 'GET':
+        # Return user profile data
         return jsonify({
+            'user_id': user.user_id,
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
             'profile_picture': user.profile_picture
         })
-
-    # For POST request, handle profile picture upload if not provided
-    if request.method == 'POST' and 'profile_picture' in request.files:
-        profile_picture_file = request.files['profile_picture']
-        if profile_picture_file:
-            
-            profile_picture_data = profile_picture_file.read()
-            profile_picture_data = base64.b64encode(profile_picture_file.read()).decode('utf-8')
-            
-            user.profile_picture = profile_picture_data
-            db.session.commit()
-            return jsonify({'message': 'Profile picture uploaded successfully'}), 200
-        else:
-            return jsonify({'error': 'No profile picture provided in the request'}), 400
-
-    # For PUT request, update user profile data
-    if request.method == 'PUT':
-        first_name = request.json.get('first_name')
-        last_name = request.json.get('last_name')
-        email = request.json.get('email')
-        user_name = request.json.get('user_name')
-
-        # Update user profile fields
-        if first_name:
-            user.first_name = first_name
-        if last_name:
-            user.last_name = last_name
-        if email:
-            user.email = email
-
-        # Update profile picture if provided
+        
+    elif request.method == 'POST':
+        # Check if the request contains a file
         if 'profile_picture' in request.files:
             profile_picture_file = request.files['profile_picture']
-            if profile_picture_file:
-             
-                profile_picture_data = base64.b64encode(profile_picture_file.read()).decode('utf-8')
-               
-                user.profile_picture = profile_picture_data
+            # Check content type
+            if profile_picture_file.content_type.startswith('image/'):
+                # Save the file to the configured upload folder
+                filename = secure_filename(profile_picture_file.filename)
+                upload_folder = app.config['UPLOAD_FOLDER']
+                os.makedirs(upload_folder, exist_ok=True)  # Ensure directory exists
+                profile_picture_path = os.path.join(upload_folder, filename)
+                profile_picture_file.save(profile_picture_path)
+                # Update the user's profile_picture field with the file path
+                user.profile_picture = os.path.join('images', filename)
+            else:
+                return jsonify({'error': 'Invalid file type. Only images are allowed'}), 400
+  
+        # Update other user profile fields if present in the request JSON
+        if 'first_name' in request.json:
+            user.first_name = request.json['first_name']
+        if 'last_name' in request.json:
+            user.last_name = request.json['last_name']
+        if 'email' in request.json:
+            user.email = request.json['email']
 
-        db.session.commit()
-        return jsonify({'message': 'Profile updated successfully'}), 200
-
-    return jsonify({'error': 'Invalid request method'}), 405
-
-
+        try:
+            db.session.commit()
+            return jsonify({'message': 'Profile updated successfully'}), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
 
 @app.route('/create_post', methods=['POST'])
 @jwt_required()
@@ -226,6 +215,7 @@ def create_post():
     db.session.commit()
 
     return jsonify({'message': 'Post created successfully'}), 201
+
 
 
 @app.route('/get_posts', methods=['GET'])
@@ -342,35 +332,46 @@ def join_group():
 @app.route('/leave_group', methods=['POST'])
 @jwt_required()
 def leave_group():
+    # Extract current user ID from JWT token
     current_user_id = get_jwt_identity()
+
+    # Extract group_id from request JSON data
     data = request.json
     group_id = data.get('group_id')
-    
-    print("Current user ID:", current_user_id)
+
+    # Log current user ID and group ID
+    print("Current User ID:", current_user_id)
     print("Group ID before querying the database:", group_id)
-    logging.info(f"Current user ID: {current_user_id}, Group ID before querying the database: {group_id}")
-    
+    logging.info(f"Current User ID: {current_user_id}, Group ID before querying the database: {group_id}")
 
     # Retrieve the group from the database
     group = Group.query.get(group_id)
-    
+
+    # Log group ID after querying the database
     print("Group ID after querying the database:", group_id)
     logging.info(f"Group ID after querying the database: {group_id}")
-   
 
     # Check if the current user is a member of the group
     membership = Membership.query.filter_by(user_id=current_user_id, group_id=group_id).first()
+
+    # Log membership status
     print("Membership status for user:", membership)
+    logging.info(f"Membership status for user: {membership}")
+
+    # If user is not a member of the group, return an error response
     if not membership:
         return jsonify({'error': 'User is not a member of this group'}), 400
 
     # Delete the Membership entry for the user and group
     db.session.delete(membership)
     db.session.commit()
+
+    # Log successful deletion of membership entry
     print("Membership entry deleted successfully")
+    logging.info("Membership entry deleted successfully")
 
+    # Return a success message
     return jsonify({'message': 'User left the group successfully'}), 200
-
 # Route for admin to remove a user from a group
 @app.route('/remove_user_from_group', methods=['POST'])
 @jwt_required()
@@ -450,8 +451,7 @@ def send_message(user_id):
     # Create a new message
     message = Message(
         content=content,
-        sender_id=current_user_id,  # Set the sender ID
-        receiver_id=user_id,        # Set the receiver ID
+        user_id=current_user_id,  # Set the sender ID
         is_sender_inbox=True,       # Indicate that the sender is the current user
     )
     db.session.add(message)
@@ -459,31 +459,33 @@ def send_message(user_id):
     
     return jsonify({'message': 'Message sent successfully'}), 200
 
-@app.route('/messages/<int:message_id>', methods=["GET"])
+@app.route('/get_user_id', methods=['GET'])
 @jwt_required()
-def get_message(message_id):
+def get_user_id():
     current_user_id = get_jwt_identity()
-    
-    # Fetch the message
-    message = Message.query.get(message_id)
-    if not message:
-        return jsonify({'error': 'Message not found'}), 404
-    
-    # Check if the current user is the sender or receiver of the message
-    if current_user_id != message.sender_id and current_user_id != message.receiver_id:
-        return jsonify({'error': 'Unauthorized access to this message'}), 403
-    
-    # Construct message details
-    message_detail = {
-        'id': message.id,
-        'content': message.content,
-        'sender_id': message.sender_id,
-        'receiver_id': message.receiver_id,
-        'is_sender_inbox': message.is_sender_inbox,
-        'created_at': message.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-    }
-    
-    return jsonify({'message': message_detail}), 200
+    return {'userId': current_user_id}, 200
+
+@app.route('/get_messages/<int:user_id>', methods=["GET"])
+@jwt_required()
+def get_messages(user_id):
+    # Get the current user ID
+    current_user_id = get_jwt_identity()
+
+    # Check if the requested user ID matches the current user ID
+    if user_id != current_user_id:
+        return jsonify({'error': 'Unauthorized access to messages'}), 403
+
+    # Query the messages for the specified user
+    messages = Message.query.filter_by(user_id=user_id).all()
+
+    # Serialize the messages data
+    messages_data = []
+    for message in messages:
+        message_type = 'inbox' if message.is_sender_inbox == 1 else 'outbox'
+        message_info = {'content': message.content, 'created_at': message.created_at, 'type': message_type}
+        messages_data.append(message_info)
+
+    return jsonify({'messages': messages_data}), 200
 
 @app.route('/messages/<int:message_id>/reply', methods=["POST"])
 @jwt_required()
@@ -670,5 +672,34 @@ def get_comments(post_id):
             })
     return jsonify(comments_data)
 
-    
-    
+@app.route('/search', methods=['GET'])
+def search():
+    query = request.args.get('query')
+    category = request.args.get('category')
+
+    if not query:
+        return jsonify({'error': 'Query parameter is required'}), 400
+
+    if category == 'users':
+        results = User.query.filter((User.first_name + ' ' + User.last_name).ilike(f'%{query}%')).all()
+        data = [{'user_id': user.user_id, 'full_name': f'{user.first_name} {user.last_name}'} for user in results]
+    elif category == 'groups':
+        results = Group.query.filter(Group.group_name.ilike(f'%{query}%')).all()
+        data = [{'id': group.group_id, 'name': group.group_name} for group in results]
+    elif category == 'posts':
+        results = Post.query.filter(Post.title.ilike(f'%{query}%') | Post.content.ilike(f'%{query}%')).all()
+        data = [{'id': post.post_id, 'title': post.title, 'content': post.content} for post in results]
+    elif category == 'all':
+        user_results = User.query.filter((User.first_name + ' ' + User.last_name).ilike(f'%{query}%')).all()
+        group_results = Group.query.filter(Group.group_name.ilike(f'%{query}%')).all()
+        post_results = Post.query.filter(Post.title.ilike(f'%{query}%') | Post.content.ilike(f'%{query}%')).all()
+        
+        data = {
+            'users': [{'user_id': user.user_id, 'full_name': f'{user.first_name} {user.last_name}'} for user in user_results],
+            'groups': [{'id': group.group_id, 'name': group.group_name} for group in group_results],
+            'posts': [{'id': post.post_id, 'title': post.title, 'content': post.content} for post in post_results]
+        }
+    else:
+        return jsonify({'error': 'Invalid category'}), 400
+
+    return jsonify(data)

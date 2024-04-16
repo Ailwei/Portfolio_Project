@@ -14,7 +14,7 @@ class User(db.Model):
     email = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.VARCHAR(50), nullable=False)
     comfirm_password = db.Column(db.VARCHAR(50), nullable=False)
-    profile_picture = db.Column(db.BLOB, nullable=True)
+    profile_picture = db.Column(db.VARCHAR(255), nullable=True)
     
     comments = db.relationship('Comments', back_populates="user")
     post = relationship("Post", back_populates="user")
@@ -42,7 +42,7 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, ForeignKey('user.user_id'))
     group_id = db.Column(db.Integer, ForeignKey('group.group_id'), nullable=True)
-    post_thumbnail = db.Column(db.BLOB, nullable=True)
+    post_thumbnail = db.Column(VARCHAR(255), nullable=True)
     created_at = db.Column(db.DateTime, default=func.now())
     
     comments = db.relationship('Comments', back_populates="post")

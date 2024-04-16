@@ -74,14 +74,9 @@ function CreatePostPage({ group_id, history }) {
     setPostThumbnail(e.target.files[0]);
   };
 
-  const toggleFormVisibility = () => {
-    setIsFormVisible(!isFormVisible);
-  };
-
   return (
     <div className="post-container">
-      <button onClick={toggleFormVisibility}>Create a Post</button>
-      {isFormVisible && (
+      
         <form className="post-form" onSubmit={handleSubmit}> 
           <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
           <textarea placeholder="Content" value={content} onChange={(e) => setContent(e.target.value)}></textarea>
@@ -91,7 +86,6 @@ function CreatePostPage({ group_id, history }) {
           </div>
           <button type="submit">Submit</button>
         </form>
-      )}
       {errorPost && <p className="error">{errorPost}</p>}
     </div>
   );

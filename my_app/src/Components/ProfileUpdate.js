@@ -41,6 +41,11 @@ export default function ProfileUpdatePage({ authToken }) {
             return;
         }
 
+        if (!profilePicture || !['image/jpeg', 'image/png'].includes(profilePicture.type)) {
+            alert('Please select a JPEG or PNG image for the profile picture.');
+            return;
+        }
+
         const formData = new FormData();
         formData.append('first_name', firstName);
         formData.append('last_name', lastName);
@@ -50,9 +55,8 @@ export default function ProfileUpdatePage({ authToken }) {
         formData.append('current_password', currentPassword);
         formData.append('new_password', newPassword);
         formData.append('confirm_new_password', confirmNewPassword);
-      
 
-        axios.put('http://127.0.0.1:5000/update_profile', formData, {
+        axios.post('http://127.0.0.1:5000/update_profile', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
                 Authorization: `Bearer ${authToken}`
@@ -74,7 +78,7 @@ export default function ProfileUpdatePage({ authToken }) {
     return (
         <div>
             <h1>Update Profile</h1>
-            <form>
+            <form onSubmit={updateProfile}  encType="multipart/form-data">
                 <div className="mb-3">
                     <label htmlFor="firstName" className="form-label">First Name</label>
                     <input type="text" className="form-control" id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
@@ -103,7 +107,7 @@ export default function ProfileUpdatePage({ authToken }) {
                     <label htmlFor="confirmNewPassword" className="form-label">Confirm New Password</label>
                     <input type="password" className="form-control" id="confirmNewPassword" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} />
                 </div>
-                <button type="button" className="btn btn-primary" onClick={updateProfile}>Update Profile</button>
+                <button type="type" className="btn btn-primary" onClick={updateProfile}>Update Profile</button>
             </form>
         </div>
     );
