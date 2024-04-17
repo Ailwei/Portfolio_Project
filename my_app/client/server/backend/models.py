@@ -84,7 +84,7 @@ class Group(db.Model):
   
     user = relationship("User", back_populates="group")
     membership = relationship("Membership", back_populates="group")
-    reaction = relationship("Reaction", back_populates="group")
+    #reaction = relationship("Reaction", back_populates="group")
     post = relationship("Post", back_populates="group")
     blockuser = relationship("BlockUser", back_populates="group")
     
@@ -121,11 +121,11 @@ class Reaction(db.Model):
     
     user_id = db.Column(db.Integer, ForeignKey('user.user_id'))
     post_id = db.Column(db.Integer, ForeignKey('post.post_id'))
-    group_id = db.Column(db.Integer, ForeignKey('group.group_id'))
+    #group_id = db.Column(db.Integer, ForeignKey('group.group_id'))
     
     user = relationship("User", back_populates="reaction")
     post = relationship("Post", back_populates="reaction")
-    group = relationship("Group", back_populates="reaction")
+   # group = relationship("Group", back_populates="reaction")
     
 class Comments(db.Model):
     __tablename__ = 'comments'

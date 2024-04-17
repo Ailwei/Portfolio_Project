@@ -50,6 +50,7 @@ const Fullpost = () => {
 
   return (
     <div className="full-post-container">
+    
       {post && (
         <>
           <div>
@@ -90,6 +91,7 @@ const Fullpost = () => {
                   <p>{comment.comment}</p>
                 </div>
               </div>
+              
             ))}
           </div>
         </>

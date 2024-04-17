@@ -129,21 +129,28 @@ const Dashboard = () => {
   const handleSelectCategory = (category) => {
     setChosenCategory(category);
     setShowAllCategories(false)
-  }
 
+  }
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/Login'); // Redirect to the login page if the user is not authenticated
+      return;
+    }
+  }, [navigate]);
   return (
     <div className="dashboard">
       <header className="header">
         
         <nav>
-        <Link to="/Dashboard">
+        <Link to='../Dashboard'>
         <h1 onClick={handleClick}>CommHub</h1>
       </Link>
-          <button className="logout-button" onClick={handleLogout}>Logout</button>
-          <Link to="#" onClick={toggleCreatePostPage}>Create Post</Link>
-          <Link to="#" onClick={toggleCreateGroupForm}>Create Group</Link>
-          <Link to="#" onClick={toggleMessages}>Messages</Link>
-          <Menu /> 
+         
+          <Link to="#" className="menu-link" onClick={toggleCreatePostPage}>Create Post</Link>
+          <Link to="#" className="menu-link" onClick={toggleCreateGroupForm}>Create Group</Link>
+          <Link to="#" className="menu-link" onClick={toggleMessages}>Messages</Link>
+         
           <div className="search-container">
             <input
               type="text"
@@ -164,24 +171,25 @@ const Dashboard = () => {
             </select>
             <button onClick={handleSearch} className="search-button">Search</button>
           </div>
+
           <div className="envelope-container">
             <i className="fas fa-envelope"></i>
           </div>
-        </nav>
-        <div className="user-info">
+          <div className="user-info">
           {/* Display user information */}
-          <div>Login as: <GetFullName userId={userId} /></div>
+          <button className="logout-button" onClick={handleLogout}>Logout</button> </div>
+
+          <Menu />
+          <GetFullName userId={userId} />
           
-        </div>
+        </nav>
+       
+          
+       
       </header>
 
       <main className="main-container">
-  {showSidebar && (
-    <aside className="sidebar">
-      {/* current user */}
-    
-    </aside>
-  )}
+  
   <table className="main-content">
     <tbody>
       <tr>
@@ -325,7 +333,7 @@ const Dashboard = () => {
 </td>
         
         <td className="sidebar">
-          <GetPostWidget />
+          <div className="sidebar-item"><GetPostWidget /></div>
           <GetGroupWidget />
         </td>
       </tr>

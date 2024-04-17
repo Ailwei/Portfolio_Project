@@ -51,9 +51,9 @@ function CreatePostPage({ group_id, history }) {
         setTitle('');
         setContent('');
         setPostThumbnail(null);
-  
+        setIsFormVisible(false); 
         setErrorPost('Post created successfully:', response.data.message);
-        navigate('/')
+        navigate('../Dashboard');
       }
       
     } catch (error) {
@@ -76,7 +76,7 @@ function CreatePostPage({ group_id, history }) {
 
   return (
     <div className="post-container">
-      
+     
         <form className="post-form" onSubmit={handleSubmit}> 
           <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
           <textarea placeholder="Content" value={content} onChange={(e) => setContent(e.target.value)}></textarea>

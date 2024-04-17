@@ -26,7 +26,7 @@ const CreateGroupForm = (toggleCreateGroupForm) => {
     // Check if input fields are empty
     if (!groupData.group.trim() || !groupData.description.trim()) {
       setError('Group name and description cannot be empty');
-      navigate('/dashboard')
+      navigate('/')
       return;
     }
 

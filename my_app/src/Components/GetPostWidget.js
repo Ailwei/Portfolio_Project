@@ -29,6 +29,7 @@ const GetPostWidget = () => {
 
   return (
     <div className="post-titles">
+    <h1> Latest Posts </h1>
   {posts && posts.length > 0 ? (
     posts.map((post) => (
       <div key={post.id} className="post-title">

@@ -340,35 +340,36 @@ def leave_group():
     group_id = data.get('group_id')
 
     # Log current user ID and group ID
-    print("Current User ID:", current_user_id)
-    print("Group ID before querying the database:", group_id)
     logging.info(f"Current User ID: {current_user_id}, Group ID before querying the database: {group_id}")
 
     # Retrieve the group from the database
     group = Group.query.get(group_id)
 
-    # Log group ID after querying the database
-    print("Group ID after querying the database:", group_id)
-    logging.info(f"Group ID after querying the database: {group_id}")
+    # Check if the group exists
+    if not group:
+        return jsonify({'error': 'Group not found'}), 404
 
-    # Check if the current user is a member of the group
+    # Retrieve the membership entry for the user and group
     membership = Membership.query.filter_by(user_id=current_user_id, group_id=group_id).first()
-
-    # Log membership status
-    print("Membership status for user:", membership)
-    logging.info(f"Membership status for user: {membership}")
 
     # If user is not a member of the group, return an error response
     if not membership:
         return jsonify({'error': 'User is not a member of this group'}), 400
 
+    # If the current user is the owner of the group
+    if current_user_id == group.user_id:
+        # Check if there are other members in the group
+        if Membership.query.filter_by(group_id=group_id).count() > 1:
+            # Transfer ownership to another member
+            new_owner_membership = Membership.query.filter(Membership.group_id == group_id, Membership.user_id != current_user_id).first()
+            group.user_id = new_owner_membership.user_id
+        else:
+            # Delete the group
+            db.session.delete(group)
+
     # Delete the Membership entry for the user and group
     db.session.delete(membership)
     db.session.commit()
-
-    # Log successful deletion of membership entry
-    print("Membership entry deleted successfully")
-    logging.info("Membership entry deleted successfully")
 
     # Return a success message
     return jsonify({'message': 'User left the group successfully'}), 200
