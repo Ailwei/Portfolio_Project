@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"
 
 export default function ProfileUpdatePage({ authToken }) {
     const [firstName, setFirstName] = useState('');
@@ -16,6 +16,7 @@ export default function ProfileUpdatePage({ authToken }) {
     const fetchUserData = () => {
         axios.get('http://127.0.0.1:5000/update_profile', {
             headers: {
+                'Content-Type': 'application/json',
                 Authorization: `Bearer ${authToken}`
             }
         })
@@ -46,21 +47,28 @@ export default function ProfileUpdatePage({ authToken }) {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('first_name', firstName);
-        formData.append('last_name', lastName);
-        formData.append('email', email);
-        formData.append('user_name', userName);
-        formData.append('profile_picture', profilePicture);
-        formData.append('current_password', currentPassword);
-        formData.append('new_password', newPassword);
-        formData.append('confirm_new_password', confirmNewPassword);
+        // Convert the file to base64
+    const reader = new FileReader();
+    reader.readAsDataURL(profilePicture);
+    reader.onloadend = () => {
+        const base64Data = reader.result.split(',')[1];
 
-        axios.post('http://127.0.0.1:5000/update_profile', formData, {
+        const requestData = {
+            first_name: firstName,
+            last_name: lastName,
+            email: email,
+            user_name: userName,
+            current_password: currentPassword,
+            new_password: newPassword,
+            confirm_new_password: confirmNewPassword,
+            profile_picture: base64Data,
+            mimetype: profilePicture.type
+        };
+
+        axios.post('http://127.0.0.1:5000/update_profile', requestData, {
             headers: {
-                'Content-Type': 'multipart/form-data',
+                'Content-Type': 'application/json',
                 Authorization: `Bearer ${authToken}`
-                
             }
         })
         .then(function (response) {
@@ -73,12 +81,13 @@ export default function ProfileUpdatePage({ authToken }) {
                 alert("An error occurred. Please try again later.");
             }
         });
+        }
     }
 
     return (
         <div>
             <h1>Update Profile</h1>
-            <form onSubmit={updateProfile}  encType="multipart/form-data">
+            <form onSubmit={updateProfile}>
                 <div className="mb-3">
                     <label htmlFor="firstName" className="form-label">First Name</label>
                     <input type="text" className="form-control" id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
@@ -107,8 +116,9 @@ export default function ProfileUpdatePage({ authToken }) {
                     <label htmlFor="confirmNewPassword" className="form-label">Confirm New Password</label>
                     <input type="password" className="form-control" id="confirmNewPassword" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} />
                 </div>
-                <button type="type" className="btn btn-primary" onClick={updateProfile}>Update Profile</button>
+                <button type="submit" className="btn btn-primary">Update Profile</button>
             </form>
         </div>
     );
-}
+    
+    }

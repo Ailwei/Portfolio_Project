@@ -2,16 +2,18 @@ from flask import Flask, request, jsonify, session,redirect, url_for
 from flask_bcrypt import Bcrypt 
 from flask_cors import CORS, cross_origin 
 from models import db, User, Post, Comments, Message, Membership, Group, Reaction, BlockUser
-import secrets
-import os, stat
+import secrets, os
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import logging
-import base64
 from werkzeug.utils import secure_filename
+import base64
+
+
+
 
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'src', 'images')
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['JWT_SECRET_KEY'] = 'rT30uDfAqHbF'
 jwt = JWTManager(app)
 
@@ -148,30 +150,25 @@ def get_or_update_profile():
     
     if request.method == 'GET':
         # Return user profile data
+        profile_picture_base64 = base64.b64encode(user.profile_picture).decode('utf-8') if user.profile_picture else None
         return jsonify({
             'user_id': user.user_id,
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
-            'profile_picture': user.profile_picture
+            'profile_picture': profile_picture_base64  # Send base64 encoded profile picture
         })
         
     elif request.method == 'POST':
-        # Check if the request contains a file
-        if 'profile_picture' in request.files:
-            profile_picture_file = request.files['profile_picture']
-            # Check content type
-            if profile_picture_file.content_type.startswith('image/'):
-                # Save the file to the configured upload folder
-                filename = secure_filename(profile_picture_file.filename)
-                upload_folder = app.config['UPLOAD_FOLDER']
-                os.makedirs(upload_folder, exist_ok=True)  # Ensure directory exists
-                profile_picture_path = os.path.join(upload_folder, filename)
-                profile_picture_file.save(profile_picture_path)
-                # Update the user's profile_picture field with the file path
-                user.profile_picture = os.path.join('images', filename)
-            else:
-                return jsonify({'error': 'Invalid file type. Only images are allowed'}), 400
+        # Check if the request contains a base64 encoded image
+        if 'profile_picture' in request.json:
+            profile_picture_data = request.json['profile_picture']
+            # Decode base64 image data
+            profile_picture_bytes = base64.b64decode(profile_picture_data)
+            # Update the user's profile_picture field with the decoded image data
+            user.profile_picture = profile_picture_bytes
+            
+            user.mimetype = request.json.get('mimetype')
   
         # Update other user profile fields if present in the request JSON
         if 'first_name' in request.json:
@@ -188,33 +185,37 @@ def get_or_update_profile():
             db.session.rollback()
             return jsonify({'error': str(e)}), 500
 
+        
 @app.route('/create_post', methods=['POST'])
 @jwt_required()
 def create_post():
     current_user_id = get_jwt_identity()
 
-    title = request.json.get('title')
-    content = request.json.get('content')
-    group_id = request.json.get('group_id')
+    title = request.form.get('title')
+    content = request.form.get('content')
+    group_id = request.form.get('group_id')
     post_thumbnail = request.files.get('post_thumbnail')
- 
+
     if not title or not content:
         return jsonify({'error': 'Title and content are required'}), 400
     
     if group_id is not None and not is_valid_group(group_id):
         return jsonify({'error': 'Invalid group_id'}), 400
 
+    if not post_thumbnail:
+        return jsonify({'error': 'Post thumbnail is required'}), 400
 
+    # Upload the image
+    filename = secure_filename(post_thumbnail.filename)
+    post_thumbnail_data = post_thumbnail.read()
 
-    new_post = Post(title=title, content=content, user_id=current_user_id, group_id=group_id)
-    
-    if post_thumbnail:
-        thumbnail_data = post_thumbnail.read()
-        new_post.post_thumbnail = thumbnail_data
+    # Create the post with the uploaded image data
+    new_post = Post(title=title, content=content, user_id=current_user_id, group_id=group_id, post_thumbnail=post_thumbnail_data, mimetype=post_thumbnail.mimetype)
     db.session.add(new_post)
     db.session.commit()
 
     return jsonify({'message': 'Post created successfully'}), 201
+
 
 
 
@@ -243,13 +244,17 @@ def get_posts():
     for post in paginated_posts.items:
         author = User.query.get(post.user_id)
         author_name = f"{author.first_name} {author.last_name}" if author else "Unknown"
+        
+        # Convert post_thumbnail to Base64 string
+        thumbnail_base64 = base64.b64encode(post.post_thumbnail).decode('utf-8') if post.post_thumbnail else None
+        
         serialized_post = {
-            'id': post.post_id,  
+            'id': post.post_id,
             'title': post.title,
             'content': post.content,
             'group_id': post.group_id,
             'user_id': post.user_id,
-            'post_thumbnail': post.post_thumbnail,
+            'post_thumbnail': thumbnail_base64,  # Include Base64-encoded thumbnail
             'created_at': post.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             'author_full_name': author_name  # Include author's full name
         }

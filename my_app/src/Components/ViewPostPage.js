@@ -123,7 +123,8 @@ const ViewPosts = ({setSelectedPost}) => {
               ) : (
                 <p>{post.content}</p>
               )}
-              <img src={post.profilePictureUrl || defaultProfileImage} alt="Profile" className="profile-image" />
+              <img src={`data:image/png;base64,${post.post_thumbnail}`} alt="Post Thumbnail" className="post-thumbnail"  width="100" height="100" />
+              <img src={post.profile_picture ? `data:image/png;base64,${post.profile_picture}` : defaultProfileImage} alt="Profile" className="profile-image" />
               <span className="author-name">
                 {post.author_full_name ? (
                   <button onClick={() => handleViewUserProfile(post.user_id)}>
