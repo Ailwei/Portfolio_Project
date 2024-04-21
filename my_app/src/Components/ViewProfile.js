@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaUserPlus, FaEnvelope, FaBan } from 'react-icons/fa';
+import defaultProfileImage from '../images/profile_default.png';
 
 const ViewProfile = ({ userId }) => {
   const [profile, setProfile] = useState(null);
@@ -45,7 +46,7 @@ const ViewProfile = ({ userId }) => {
   return (
     <div className="profile">
       <div className="profile-info">
-        <img src={profile.profilePicture} alt="Profile" />
+      <img src={profile.profile_picture ? `data:image/png;base64,${profile.profile_picture}` : defaultProfileImage} alt="Profile" className="profile-image" />
         <h2>{profile.fullName}</h2> {/* Replace username with fullName */}
         <p>{profile.bio}</p>
       </div>

@@ -15,6 +15,8 @@ const ViewPosts = ({setSelectedPost}) => {
   const [authToken, setToken] = useState(null);
   const [commentingPostId, setCommentingPostId] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null)
+
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,6 +32,7 @@ const ViewPosts = ({setSelectedPost}) => {
       const response = await axios.get(`http://127.0.0.1:5000/get_posts?page=${currentPage}`);
       setPosts(response.data.posts);
       setTotalPages(response.data.total_pages);
+      setCurrentUserId(response.data.current_user_id);
       const postIds = response.data.posts.map(post => post.id);
       const commentsResponse = await Promise.all(postIds.map(postId => axios.get(`http://127.0.0.1:5000/get_comments/${postId}`)));
       const commentsData = commentsResponse.reduce((acc, response, index) => {

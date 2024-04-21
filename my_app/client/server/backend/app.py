@@ -7,6 +7,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 import logging
 from werkzeug.utils import secure_filename
 import base64
+from base64 import b64encode
 
 
 
@@ -88,7 +89,7 @@ def get_user_profile():
     
     profile = {
         'fullName': f'{user.first_name} {user.last_name}',
-        'profilePicture': profile_picture_base64,
+        'profile_picture': profile_picture_base64,
         'groups': [{'id': group.group_id, 'name': group.group_name} for group in user.group],
         'memberships': [{'id': membership.member_id, 'groupName': membership.group.group_name} for membership in user.membership],
         'ownedGroups': [{'id': owned_group.group_id, 'name': owned_group.group_name} for owned_group in user.group if owned_group.user_id == current_user_id]
@@ -108,9 +109,13 @@ def view_user_profile(user_id):
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
+    profile_picture_base64 = None
+    if user.profile_picture:
+        profile_picture_base64 = base64.b64encode(user.profile_picture).decode('utf-8')
+    
     profile = {
         'fullName': f'{user.first_name} {user.last_name}',
-        'profilePicture': user.profile_picture,
+        'profile_picture': profile_picture_base64,
         'groups': [{'id': group.group_id, 'name': group.group_name} for group in user.group],
         'memberships': [{'id': membership.member_id, 'groupName': membership.group.group_name} for membership in user.membership],
         'ownedGroups': [{'id': owned_group.group_id, 'name': owned_group.group_name} for owned_group in user.group if owned_group.user_id == user_id]
@@ -245,8 +250,13 @@ def get_posts():
         author = User.query.get(post.user_id)
         author_name = f"{author.first_name} {author.last_name}" if author else "Unknown"
         
-        # Convert post_thumbnail to Base64 string
-        thumbnail_base64 = base64.b64encode(post.post_thumbnail).decode('utf-8') if post.post_thumbnail else None
+        profile_picture_base64 = None
+        if author and author.profile_picture:
+            profile_picture_base64 = base64.b64encode(author.profile_picture).decode('utf-8')
+
+        thumbnail_base64 = None
+        if post.post_thumbnail:
+            thumbnail_base64 = base64.b64encode(post.post_thumbnail).decode('utf-8')
         
         serialized_post = {
             'id': post.post_id,
@@ -254,6 +264,7 @@ def get_posts():
             'content': post.content,
             'group_id': post.group_id,
             'user_id': post.user_id,
+            'profile_picture': profile_picture_base64,
             'post_thumbnail': thumbnail_base64,  # Include Base64-encoded thumbnail
             'created_at': post.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             'author_full_name': author_name  # Include author's full name
@@ -266,6 +277,7 @@ def get_posts():
         'current_page': paginated_posts.page,
         'total_pages': paginated_posts.pages
     }), 200
+
     
 @app.route('/get_post/<int:postId>', methods=['GET'])
 @jwt_required(optional=True)
@@ -276,18 +288,30 @@ def get_post(postId):
 
     author = User.query.get(post.user_id)
     author_name = f"{author.first_name} {author.last_name}" if author else "Unknown"
+    
+    # Convert post thumbnail and profile picture to Base64 string
+    post_thumbnail_base64 = None
+    if post.post_thumbnail:
+        post_thumbnail_base64 = b64encode(post.post_thumbnail).decode('utf-8')
+        
+    profile_picture_base64 = None
+    if author.profile_picture:
+        profile_picture_base64 = b64encode(author.profile_picture).decode('utf-8')
+
     serialized_post = {
         'id': post.post_id,  
         'title': post.title,
         'content': post.content,
         'group_id': post.group_id,
         'user_id': post.user_id,
-        'post_thumbnail': post.post_thumbnail,
+        'profile_picture': profile_picture_base64,
+        'post_thumbnail': post_thumbnail_base64,  # Convert binary thumbnail to Base64 string
         'created_at': post.created_at.strftime("%Y-%m-%d %H:%M:%S"),
         'author_full_name': author_name  # Include author's full name
     }
 
     return jsonify(serialized_post), 200
+
 @app.route('/create_group', methods=['POST'])
 @jwt_required()
 def create_group():
