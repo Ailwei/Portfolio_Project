@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, session,redirect, url_for 
 from flask_bcrypt import Bcrypt 
 from flask_cors import CORS, cross_origin 
-from models import db, User, Post, Comments, Message, Membership, Group, Reaction, BlockUser
+from models import db, User, Post, Comments, Message, Membership, Group, Reaction, BlockUser, Follow
 import secrets, os
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import logging
@@ -702,6 +702,60 @@ def get_comments(post_id):
             })
     return jsonify(comments_data)
 
+@app.route('/follow/<int:user_id>', methods=['POST'])
+@jwt_required()
+def follow_user(user_id):
+    current_user_id = get_jwt_identity()
+    
+     # Check if the user is trying to follow themselves
+     
+    if current_user_id == user_id:
+        return jsonify({'error': 'You cannot follow yourself'}), 400
+    
+     # Check if the follow relationship already exists
+     
+    existing_follow = Follow.query.filter_by(user_id=current_user_id, followed_user_id=user_id).first()
+    if existing_follow:
+        return jsonify({'error': 'You have already followed this user'}), 400
+
+    # Create a new Follow instance
+    
+    follow = Follow(followed_user_id=user_id, user_id=current_user_id)
+    db.session.add(follow)
+    db.session.commit()
+
+    return jsonify({'message': 'User followed successfully'})
+
+@app.route('/unfollow/<int:user_id>', methods=['POST'])
+@jwt_required()  # Require JWT authentication
+def unfollow_user(user_id):
+    # Get the current user ID from the JWT token
+    current_user_id = get_jwt_identity()
+
+    # Check if the user is trying to unfollow themselves
+    if current_user_id == user_id:
+        return jsonify({'error': 'You cannot unfollow yourself'}), 400
+
+    # Check if the follow relationship exists
+    existing_follow = Follow.query.filter_by(user_id=current_user_id, followed_user_id=user_id).first()
+    if not existing_follow:
+        return jsonify({'error': 'You are not following this user'}), 400
+
+    # Delete the follow relationship from the database
+    db.session.delete(existing_follow)
+    db.session.commit()
+
+    return jsonify({'message': 'User unfollowed successfully'}), 200
+
+@app.route('/followed_users', methods=['GET'])
+@jwt_required()
+def get_followed_users():
+    current_user_id = get_jwt_identity() 
+    followed_users = Follow.query.filter_by(user_id=current_user_id).all() 
+    followed_user_ids = [followed_user.followed_user_id for followed_user in followed_users]
+    return jsonify({'followed_users': followed_user_ids}), 200
+
+
 @app.route('/search', methods=['GET'])
 def search():
     query = request.args.get('query')
@@ -733,3 +787,4 @@ def search():
         return jsonify({'error': 'Invalid category'}), 400
 
     return jsonify(data)
+

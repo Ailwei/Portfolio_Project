@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, VARCHAR, Text, BLOB, Sequence, ForeignKe
 from sqlalchemy.orm import relationship
 from sqlalchemy.exc import IntegrityError
 
+
 db = SQLAlchemy()
   
 class User(db.Model):
@@ -24,7 +25,8 @@ class User(db.Model):
     membership = relationship("Membership", back_populates="user")
     blockuser = relationship("BlockUser", back_populates="user")
     reaction = relationship("Reaction", back_populates="user")
-    
+    follows = db.relationship("Follow", back_populates="user")
+   
     
     __table_args__ = (
         db.CheckConstraint("first_name IS NOT NULL"),
@@ -51,6 +53,7 @@ class Post(db.Model):
     group = relationship("Group", back_populates="post")
     user = relationship("User", back_populates="post")
     reaction = relationship("Reaction", back_populates="post")
+   
     
     ##def serialize(self):
         #return {
@@ -116,18 +119,27 @@ class Reaction(db.Model):
     __tablename__ = 'reaction'
     reaction_id = db.Column(db.Integer, Sequence('reaction_id_seq'), primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
-    target_type = db.Column(db.VARCHAR(50), nullable=False)
-    target_id = db.Column(db.Integer, nullable=False)
     actvity_type = db.Column(db.VARCHAR(50), nullable=False)
-    comment = Column(VARCHAR(255) , nullable=True)
     
     user_id = db.Column(db.Integer, ForeignKey('user.user_id'))
     post_id = db.Column(db.Integer, ForeignKey('post.post_id'))
+    comment_id = db.Column(db.Integer, ForeignKey('comments.comment_id'))
     #group_id = db.Column(db.Integer, ForeignKey('group.group_id'))
     
     user = relationship("User", back_populates="reaction")
     post = relationship("Post", back_populates="reaction")
+    comments = relationship("Comments", back_populates="reaction")
+    
    # group = relationship("Group", back_populates="reaction")
+   
+class Follow(db.Model):
+    __tablename__ = 'follows'
+    follow_id = db.Column(db.Integer, primary_key=True)
+    followed_user_id = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
+
+    user = relationship("User", back_populates="follows")
+
     
 class Comments(db.Model):
     __tablename__ = 'comments'
@@ -139,3 +151,4 @@ class Comments(db.Model):
     
     user = relationship("User", back_populates="comments")
     post = relationship("Post", back_populates="comments")
+    reaction = relationship("Reaction", back_populates="comments")

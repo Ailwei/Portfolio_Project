@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaUserPlus, FaEnvelope, FaBan, FaCheckCircle } from 'react-icons/fa';
+import { FaUserPlus, FaEnvelope,FaUserMinus, FaBan, FaCheckCircle } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
 import defaultProfileImage from '../images/profile_default.png';
 import '../styles/ViewUserProfile.css';
+
 
 const ViewUserProfile = () => {
   const [profile, setProfile] = useState(null);
   const [authToken, setAuthToken] = useState('');
   const [showMessageInput, setShowMessageInput] = useState(false);
   const [messageContent, setMessageContent] = useState('');
+  const [followedUsers, setFollowedUsers] = useState([]);
   const { userId, groupId } = useParams();
 
   useEffect(() => {
@@ -28,6 +30,7 @@ const ViewUserProfile = () => {
           }
         });
         setProfile(response.data);
+        setFollowedUsers(response.data.following);
       } catch (error) {
         console.error('Error fetching user profile:', error);
       }
@@ -35,6 +38,11 @@ const ViewUserProfile = () => {
 
     fetchProfile();
   }, [userId, authToken]);
+
+  useEffect(() => {
+    fetchFollowedUsers();
+
+  }, []);
 
   const handleBlockUserorUnblockUser = async () => {
     try {
@@ -62,10 +70,49 @@ const ViewUserProfile = () => {
       console.error('Error sending message:', error);
     }
   };
+  
+  const fetchFollowedUsers = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/followed_users', {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+      setFollowedUsers(response.data.followed_users);
+    } catch (error) {
+      console.error('Error fetching followed users:', error);
+    }
+  };
 
+  const handleFollow = async (userId) => {
+    if (userId) {
+      if (followedUsers.includes(userId)) {
+        await axios.post(`http://localhost:5000/unfollow/${userId}`, {}, {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+        setFollowedUsers(followedUsers.filter(id => id !== userId));
+      } else {
+        // User is not followed, follow them
+        await axios.post(`http://localhost:5000/follow/${userId}`, {}, {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+        setFollowedUsers([...followedUsers, userId]);
+      }
+    } else {
+      console.error('Invalid user ID to follow/unfollow');
+    }
+  };
+
+  
   if (!profile) {
     return <div>Loading...</div>;
   }
+
+  
 
   return (
     <div className="profile">
@@ -82,7 +129,14 @@ const ViewUserProfile = () => {
           <button onClick={handleBlockUserorUnblockUser}><FaBan /> Block</button>
         )}
         <button onClick={handleMessageUser}><FaEnvelope /> Message</button>
-        <button><FaUserPlus /> Follow</button>
+        <button onClick={() => handleFollow(profile.user_id)} className="follow-button">
+              {followedUsers.includes(profile.user_id) ? (
+                <FaUserMinus /> 
+              ) : (
+                <FaUserPlus /> 
+              )}
+            </button>
+
       </div>
       {showMessageInput && (
         <div className="message-input">
@@ -121,5 +175,4 @@ const ViewUserProfile = () => {
     </div>
   );
 };
-
 export default ViewUserProfile;

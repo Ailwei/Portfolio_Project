@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaHeart, FaRegHeart, FaComment, FaUserPlus } from 'react-icons/fa';
+import { FaHeart,FaUserMinus, FaRegHeart, FaComment, FaUserPlus } from 'react-icons/fa';
 import defaultProfileImage from '../images/profile_default.png';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import ViewProfile from './ViewProfile'
@@ -14,7 +14,8 @@ const ViewPosts = ({setSelectedPost}) => {
   const [comments, setComments] = useState({});
   const [authToken, setToken] = useState(null);
   const [commentingPostId, setCommentingPostId] = useState(null);
-  const [currentUserId, setCurrentUserId] = useState(null)
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [followedUsers, setFollowedUsers] = useState([]);
 
 
   const navigate = useNavigate();
@@ -26,6 +27,10 @@ const ViewPosts = ({setSelectedPost}) => {
     }
     fetchPosts();
   }, [currentPage]);
+
+  useEffect(() => {
+    fetchFollowedUsers();
+  }, []);
 
   const fetchPosts = async () => {
     try {
@@ -88,13 +93,43 @@ const ViewPosts = ({setSelectedPost}) => {
       console.error('Error adding comment:', error);
     }
   };
+  
+  const fetchFollowedUsers = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/followed_users', {
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+      setFollowedUsers(response.data.followed_users);
+    } catch (error) {
+      console.error('Error fetching followed users:', error);
+    }
+  };
 
   const handleFollow = async (userId) => {
-    try {
-      const response = await axios.post(`http://127.0.0.1:5000/follow/${userId}`);
-      console.log('User followed:', response.data);
-    } catch (error) {
-      console.error('Error following user:', error);
+    if (userId) {
+      if (followedUsers.includes(userId)) {
+        // User is already followed, unfollow them
+        await axios.post(`http://localhost:5000/unfollow/${userId}`, {}, {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+        // Update followedUsers state after unfollowing
+        setFollowedUsers(followedUsers.filter(id => id !== userId));
+      } else {
+        // User is not followed, follow them
+        await axios.post(`http://localhost:5000/follow/${userId}`, {}, {
+          headers: {
+            Authorization: `Bearer ${authToken}`
+          }
+        });
+        // Update followedUsers state after following
+        setFollowedUsers([...followedUsers, userId]);
+      }
+    } else {
+      console.error('Invalid user ID to follow/unfollow');
     }
   };
 
@@ -147,9 +182,13 @@ const ViewPosts = ({setSelectedPost}) => {
                   <button onClick={() => handleComment(post.id)} className="comment-button">Comment</button>
                 </div>
               )}
-              <button onClick={() => handleFollow(post.userId)} className="follow-button">
-                <FaUserPlus />
-              </button>
+              <button onClick={() => handleFollow(post.user_id)} className="follow-button">
+              {followedUsers.includes(post.user_id) ? (
+                <FaUserMinus /> // If user is followed, show unfollow icon
+              ) : (
+                <FaUserPlus /> // If user is not followed, show follow icon
+              )}
+            </button>
               <div className="post-comments-summary">
                 <span onClick={() => handlePostClick(post.id)} className="expand-comments">
                   Comments ({comments[post.id] ? comments[post.id].length : 0})
