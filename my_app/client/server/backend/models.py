@@ -119,16 +119,16 @@ class Reaction(db.Model):
     __tablename__ = 'reaction'
     reaction_id = db.Column(db.Integer, Sequence('reaction_id_seq'), primary_key=True)
     created_at = db.Column(db.DateTime, nullable=False)
-    actvity_type = db.Column(db.VARCHAR(50), nullable=False)
+    activity_type = db.Column(db.Integer, nullable=False)
     
     user_id = db.Column(db.Integer, ForeignKey('user.user_id'))
     post_id = db.Column(db.Integer, ForeignKey('post.post_id'))
-    comment_id = db.Column(db.Integer, ForeignKey('comments.comment_id'))
+    #comment_id = db.Column(db.Integer, ForeignKey('comments.comment_id'))
     #group_id = db.Column(db.Integer, ForeignKey('group.group_id'))
     
     user = relationship("User", back_populates="reaction")
     post = relationship("Post", back_populates="reaction")
-    comments = relationship("Comments", back_populates="reaction")
+    #comments = relationship("Comments", back_populates="reaction")
     
    # group = relationship("Group", back_populates="reaction")
    
@@ -151,4 +151,4 @@ class Comments(db.Model):
     
     user = relationship("User", back_populates="comments")
     post = relationship("Post", back_populates="comments")
-    reaction = relationship("Reaction", back_populates="comments")
+    #reaction = relationship("Reaction", back_populates="comments")

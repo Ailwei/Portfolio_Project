@@ -8,6 +8,7 @@ import logging
 from werkzeug.utils import secure_filename
 import base64
 from base64 import b64encode
+from datetime import datetime
 
 
 
@@ -114,6 +115,7 @@ def view_user_profile(user_id):
         profile_picture_base64 = base64.b64encode(user.profile_picture).decode('utf-8')
     
     profile = {
+        'userId': user.user_id,
         'fullName': f'{user.first_name} {user.last_name}',
         'profile_picture': profile_picture_base64,
         'groups': [{'id': group.group_id, 'name': group.group_name} for group in user.group],
@@ -773,18 +775,81 @@ def search():
     elif category == 'posts':
         results = Post.query.filter(Post.title.ilike(f'%{query}%') | Post.content.ilike(f'%{query}%')).all()
         data = [{'id': post.post_id, 'title': post.title, 'content': post.content} for post in results]
-    elif category == 'all':
+    elif category == 'all' or not category:
         user_results = User.query.filter((User.first_name + ' ' + User.last_name).ilike(f'%{query}%')).all()
         group_results = Group.query.filter(Group.group_name.ilike(f'%{query}%')).all()
         post_results = Post.query.filter(Post.title.ilike(f'%{query}%') | Post.content.ilike(f'%{query}%')).all()
         
         data = {
             'users': [{'user_id': user.user_id, 'full_name': f'{user.first_name} {user.last_name}'} for user in user_results],
-            'groups': [{'id': group.group_id, 'name': group.group_name} for group in group_results],
+            'groups': [{'id': group.group_id, 'group_name': group.group_name} for group in group_results],
             'posts': [{'id': post.post_id, 'title': post.title, 'content': post.content} for post in post_results]
         }
     else:
         return jsonify({'error': 'Invalid category'}), 400
 
     return jsonify(data)
+# create new reaction
 
+@app.route('/reactions', methods=['POST'])
+@jwt_required()
+def create_reactions():
+    try:
+        data = request.json
+        current_user_id = get_jwt_identity()
+
+        post_id = data.get('post_id')
+        created_at = data.get('created_at')
+        activity_type = data.get('activity_type', 0)
+        
+        print('Received reaction data:', data)
+
+        existing_reaction = Reaction.query.filter_by(post_id=post_id, user_id=current_user_id).first()
+
+        if existing_reaction:
+            # If the reaction exists and activity_type is 1 (like), delete the existing reaction
+            if activity_type == 1:
+                db.session.delete(existing_reaction)
+        else:
+            # If the reaction doesn't exist and activity_type is 1 (like), create a new Reaction object
+            if activity_type == 1:
+                new_reaction = Reaction(
+                    activity_type=1,
+                    user_id=current_user_id,
+                    post_id=post_id,
+                    created_at=datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%fZ")
+                )
+                db.session.add(new_reaction)
+
+        db.session.commit()
+        print('Reaction updated successfully') 
+
+        return jsonify({'message': 'Reaction updated successfully'})
+    except KeyError as e:
+        error_message = 'Missing required field: {}'.format(e)
+        logging.error(error_message)
+        return jsonify({'error': error_message}), 400
+    except Exception as e:
+        error_message = 'Internal server error: {}'.format(e)
+        logging.error(error_message)
+        return jsonify({'error': error_message}), 500
+
+
+    
+# get reactions for post
+@app.route('/posts/<int:post_id>/reactions', methods=['GET'])
+def get_post_reactions(post_id):
+    post = Post.query.get_or_404(post_id)
+    reactions = Reaction.query.filter_by(post_id=post_id).all()
+    
+    # Count the number of likes for this post
+    likes_count = Reaction.query.filter_by(post_id=post_id, activity_type=1).count()
+    
+    # Prepare response data
+    response_data = {
+        'reactions': [reaction.activity_type for reaction in reactions],
+        'likes_count': likes_count
+    }
+    print(f'Likes count for post {post_id}: {likes_count}')
+    
+    return jsonify(response_data)

@@ -99,14 +99,23 @@ const Dashboard = () => {
   const handleSearch = async () => {
     try {
       const response = await axios.get(`http://localhost:5000/search?query=${query}&category=${category}`);
+      //if (response.data && response.data.length > 0) 
       setSearchResults(response.data);
       setShowSearchResults(true);
       console.log('Search results:', response.data);
-    } catch (error) {
+  }
+    catch (error) {
       console.error('Error searching:', error);
     }
   };
-
+  const handleSelectCategory = (category) => {
+    if (category === 'all') {
+      setChosenCategory(null);
+    } else {
+      setChosenCategory(category);
+    }
+  };
+  
   const handleReply = async (messageId) => {
     try {
       // Find the message by ID
@@ -121,16 +130,7 @@ const Dashboard = () => {
   const handleClick = () => {
     navigate('/Dashboard');
   };
-  const handleShowAllCategories = () => {
-    setChosenCategory(null); // Reset chosen category
-    setShowAllCategories(true); // Show all categories
-  }
-
-  const handleSelectCategory = (category) => {
-    setChosenCategory(category);
-    setShowAllCategories(false)
-
-  }
+  
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -159,11 +159,8 @@ const Dashboard = () => {
               placeholder="Enter your search query"
               className="search-input"
             />
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="search-category"
-            >
+      <select onChange={(e) => setChosenCategory(e.target.value)}>
+        <option value="">Select a Search Category</option>
               <option value="all">All</option>
               <option value="users">Users</option>
               <option value="groups">Groups</option>
@@ -228,104 +225,40 @@ const Dashboard = () => {
           {showSearchResults && (
   <div>
     {/* Render message if no matching results found */}
-    {searchResults.users.length === 0 &&
-      searchResults.posts.length === 0 &&
-      searchResults.groups.length === 0 && showAllCategories && (
-        <p>No matching results found.</p>
-      )}
+    {(!searchResults || Object.keys(searchResults).length === 0) && (
+      <p>No matching results found for {chosenCategory || 'all categories'}.</p>
+    )}
 
     {/* Render search results */}
     <div className="search-results">
-      {/* Render users */}
-      {searchResults?.users && showAllCategories && (
-        <div className="search-results-category">
-          <h2>Users</h2>
+      {/* Display search results for all categories */}
+      {Object.keys(searchResults).map(category => (
+        <div key={category} className="search-results-category">
+          <h2>{category}</h2>
           <ul>
-            {searchResults.users.map(user => (
-              <li key={user.user_id}>
-                <Link to={`/user/${user.user_id}`}>
-                  {user.full_name}
-                </Link>
+            {searchResults[category]?.map(item => (
+              <li key={item?.id}>
+                {/* Render link based on category */}
+                {category === "users" && (
+                  <Link to={`/user/${item?.user_id}`}>
+                    {item?.full_name}
+                  </Link>
+                )}
+                {category === "groups" && (
+                  <Link to={`/group/${item?.id}`}>
+                    {item?.group_name}
+                  </Link>
+                )}
+                {category === "posts" && (
+                  <Link to={`/post/${item?.id}`}>
+                    {item?.title}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
         </div>
-      )}
-
-      {/* Render posts */}
-      {searchResults?.posts && showAllCategories && (
-        <div className="search-results-category">
-          <h2>Posts</h2>
-          <ul>
-            {searchResults.posts.map(post => (
-              <li key={post.post_id}>
-                <Link to={`/post/${post.post_id}`}>{post.title}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Render groups */}
-      {searchResults?.groups && showAllCategories && (
-        <div className='search-results-category'>
-        <h2>Group</h2>
-        <ul>
-          {
-            searchResults.groups.map(group => (
-              <li key={group.group_id}>
-                <Link to={`/group/${group.group_id}`}>
-                  {group.group_name}
-                </Link>
-              </li>
-
-            ))}
-        </ul>
-        </div>
-      )}
-      {chosenCategory && (
-  <div className="search-results-category">
-    <h2>{chosenCategory}</h2>
-    <ul>
-      {searchResults[chosenCategory.toLowerCase()]?.map(item => (
-        <li key={item?.id}>
-          <Link to={`/ViewProfile/${chosenCategory}/${item?.id}`}>
-            {item?.title}
-          </Link>
-        </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Only display the chosen category */}
-      {chosenCategory && (
-  <div className="search-results-category">
-    <h2>{chosenCategory}</h2>
-    <ul>
-      {searchResults[chosenCategory]?.map(item => (
-        <li key={item?.id}>
-          {chosenCategory === "users" && (
-            <Link to={`/user/${item?.user_id}`}>
-              {item?.full_name}
-            </Link>
-          )}
-          {chosenCategory === "groups" && (
-            <Link to={`/group/${item?.id}`}>
-              {item?.name}
-            </Link>
-          )}
-          {chosenCategory === "posts" && (
-            <Link to={`/post/${item?.id}`}>
-              {item?.title}
-            </Link>
-          )}
-        </li>
       ))}
-    </ul>
-  </div>
-)}
-      
     </div>
   </div>
 )}

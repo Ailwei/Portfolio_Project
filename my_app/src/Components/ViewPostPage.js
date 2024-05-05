@@ -16,9 +16,13 @@ const ViewPosts = ({setSelectedPost}) => {
   const [commentingPostId, setCommentingPostId] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [followedUsers, setFollowedUsers] = useState([]);
-
+  const [reactions, setReactions] = useState({});
+  const [likedPosts, setLikedPosts] = useState({});
+  const [likesCountPerPost, setLikesCountPerPost] = useState({});
+  
 
   const navigate = useNavigate();
+
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -26,7 +30,7 @@ const ViewPosts = ({setSelectedPost}) => {
       setToken(token);
     }
     fetchPosts();
-  }, [currentPage]);
+  }, [currentPage, authToken]);
 
   useEffect(() => {
     fetchFollowedUsers();
@@ -45,6 +49,7 @@ const ViewPosts = ({setSelectedPost}) => {
         return acc;
       }, {});
       setComments(commentsData);
+      fetchReactions(postIds);
     } catch (error) {
       console.error('Error fetching posts:', error);
     }
@@ -69,13 +74,35 @@ const ViewPosts = ({setSelectedPost}) => {
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
-
-  const handleLike = async (postId) => {
+ 
+  const handleReaction = async (postId) => {
     try {
-      const response = await axios.post(`http://127.0.0.1:5000/like/${postId}`);
-      console.log('Post liked:', response.data);
+       // Toggle like state for the post
+       const isLiked = !likedPosts[postId] || !likedPosts[postId].clicked;
+       console.log('isLiked:', isLiked);
+      
+      const response = await axios.post(`http://127.0.0.1:5000/reactions`,  
+      {
+        user_id: currentUserId,
+        post_id: postId,
+        created_at: new Date().toISOString(),
+        activity_type: isLiked ? 1 : 0
+      }, 
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      setLikedPosts(prevLikedPosts => ({
+        ...prevLikedPosts,
+        [postId]: { clicked: isLiked }
+    }))
+      console.log('Reaction created:', response.data);
+      fetchReactions([postId]);
     } catch (error) {
-      console.error('Error liking post:', error);
+      console.error('Error creating reaction:', error);
     }
   };
 
@@ -91,6 +118,39 @@ const ViewPosts = ({setSelectedPost}) => {
       fetchPosts();
     } catch (error) {
       console.error('Error adding comment:', error);
+    }
+  };
+  const fetchReactions = async (postIds) => {
+    try {
+      const reactionsResponse = await Promise.all(postIds.map(postId => axios.get(`http://127.0.0.1:5000/posts/${postId}/reactions`)));
+      const reactionsData = reactionsResponse.reduce((acc, response, index) => {
+        acc[postIds[index]] = response.data;
+        return acc;
+      }, {});
+  
+      // Calculate total likes for each post
+      const likesCountPerPost = Object.keys(reactionsData).reduce((acc, postId) => {
+        const postReactions = reactionsData[postId];
+        const likesCount = postReactions.filter(reaction => reaction === 1).length;
+        acc[postId] = likesCount;
+        return acc;
+      }, {});
+  
+      
+      console.log('Reactions Data:', reactionsData);
+  
+      // Update state with reactions data
+      setLikedPosts(reactionsData);
+  
+      // Update likes count per post state while preservin
+      const updatedLikesCountPerPost = {
+        ...likesCountPerPost,
+        ...likesCountPerPost,
+      };
+      setLikesCountPerPost(updatedLikesCountPerPost);
+      console.log('Likes Count Per Post:', updatedLikesCountPerPost);
+    } catch (error) {
+      console.error('Error fetching reactions:', error);
     }
   };
   
@@ -172,10 +232,16 @@ const ViewPosts = ({setSelectedPost}) => {
                   <span>Unknown Author</span>
                 )}
               </span>
-              <button onClick={() => handleLike(post.id)} className="like-button">
-                {post.liked ? <FaHeart /> : <FaRegHeart />}
-              </button>
-              <FaComment onClick={() => toggleCommentBox(post.id)} className="comment-icon" />
+      <button 
+    onClick={() => handleReaction(post.id)} 
+    className="reaction-button"
+    style={{ color: likedPosts[post.id] && likedPosts[post.id].clicked ? 'red' : 'black' }} >
+
+    {likedPosts[post.id] && likedPosts[post.id].clicked ? <FaHeart /> : <FaRegHeart />}
+    <span className="like-count">{likesCountPerPost[post.id] || 0}</span>
+</button>
+
+        <FaComment onClick={() => toggleCommentBox(post.id)} className="comment-icon" />
               {commentingPostId === post.id && (
                 <div className="comment-box">
                   <input type="text" placeholder="Add a comment..." className="comment-input" value={commentContent} onChange={(e) => setCommentContent(e.target.value)} />
