@@ -12,6 +12,7 @@ import GetGroupWidget from './GetGroupWidget';
 import GetPostWidget from './GetPostWidget';
 import MessageList from './MessageList';
 import GetFullName from './GetFullname';
+import GroupsComponent from './getGroups';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const Dashboard = () => {
   const [replyMessage, setReplyMessage] = useState('');
   const [showAllCategories, setShowAllCategories] = useState(true);
   const [chosenCategory, setChosenCategory] = useState(null);
+  const [showViewGroups,setShowViewGroups] = useState(false)
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -71,6 +73,7 @@ const Dashboard = () => {
     setShowCreatePostPage(false);
     setShowCreateGroupForm(false);
     setShowSearchResults(false);
+    setShowViewGroups(false);
     if (!showSidebar) {
       setShowSidebar(true);
     }
@@ -81,6 +84,7 @@ const Dashboard = () => {
     setShowMessages(false);
     setShowCreateGroupForm(false);
     setShowSearchResults(false);
+    setShowViewGroups(false);
     if (!showSidebar) {
       setShowSidebar(true);
     }
@@ -91,10 +95,22 @@ const Dashboard = () => {
     setShowMessages(false);
     setShowCreatePostPage(false);
     setShowSearchResults(false);
+    setShowViewGroups(false);
     if (!showSidebar) {
       setShowSidebar(true);
     }
   };
+const toggleViewGroups = () => {
+
+  setShowViewGroups(!showViewGroups);
+    setShowMessages(false);
+    setShowCreatePostPage(false);
+    setShowSearchResults(false);
+    if (!showSidebar) {
+      setShowSidebar(true);
+    }
+}
+
 
   const handleSearch = async () => {
     try {
@@ -146,7 +162,7 @@ const Dashboard = () => {
         <Link to='../Dashboard'>
         <h1 onClick={handleClick}>CommHub</h1>
       </Link>
-         
+      <Link to="#" className="menu-link" onClick={toggleViewGroups}>View Group</Link>
           <Link to="#" className="menu-link" onClick={toggleCreatePostPage}>Create Post</Link>
           <Link to="#" className="menu-link" onClick={toggleCreateGroupForm}>Create Group</Link>
           <Link to="#" className="menu-link" onClick={toggleMessages}>Messages</Link>
@@ -215,13 +231,14 @@ const Dashboard = () => {
                     </ul>
                   </div>
                 )}
-        {!showMessages && !showCreateGroupForm && !showCreatePostPage && !showSearchResults && (
+        {!showMessages && !showCreateGroupForm && !showCreatePostPage && !showSearchResults && !showViewGroups && (
             <ViewPostPage />
           )}
           
           {showMessages && <MessageList userId={userId} />}
           {showCreateGroupForm && <CreateGroupForm />}
           {showCreatePostPage && <CreatePostPage toggleCreatePostPage={toggleCreatePostPage} />}
+          {showViewGroups && <GroupsComponent />}
           {showSearchResults && (
   <div>
     {/* Render message if no matching results found */}

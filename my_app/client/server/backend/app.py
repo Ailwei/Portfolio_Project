@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 import base64
 from base64 import b64encode
 from datetime import datetime
+import traceback
 
 
 
@@ -404,6 +405,47 @@ def leave_group():
 
     # Return a success message
     return jsonify({'message': 'User left the group successfully'}), 200
+
+# Endpoint to get all groups and meberships
+
+@app.route('/groups', methods=['GET'])
+@jwt_required()
+def get_groups_with_memberships():
+    try:
+        # Fetch all groups with their associated memberships
+        groups = Group.query.all()
+        groups_data = []
+        current_user_id = get_jwt_identity()  # Get the current user's ID from the JWT token
+        for group in groups:
+            group_data = {
+                'group_id': group.group_id,
+                'group_name': group.group_name,
+                'description': group.description,
+                'members': []
+            }
+            memberships = Membership.query.filter_by(group_id=group.group_id).all()
+            for membership in memberships:
+                member_data = {
+                    'user_id': membership.user_id,
+                    'user_role': membership.user_role
+                }
+                group_data['members'].append(member_data)
+            
+            # Check if current user is a member of this group
+            group_data['is_member'] = any(member['user_id'] == current_user_id for member in group_data['members'])
+            
+            groups_data.append(group_data)
+            
+            
+        logging.info('Groups data retrieved successfully: %s', groups_data)  # Log retrieved groups
+
+        return jsonify({'groups': groups_data}), 200
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+    
+    
 # Route for admin to remove a user from a group
 @app.route('/remove_user_from_group', methods=['POST'])
 @jwt_required()
