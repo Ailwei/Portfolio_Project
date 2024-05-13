@@ -12,6 +12,9 @@ import Dashboard from './Components/Dashboard';
 import Fullpost from './Components/Fullpost';
 import CreateGroupForm from './Components/CreateGroup';
 import Menu from './Components/Menu';
+import ViewGroup from './Components/ViewGroup';
+import GetJoinedGroupsWidget from './Components/getGroupJoined';
+
 
 function App() {
   const [authToken, setAuthToken] = useState(localStorage.getItem('authToken') || '');
@@ -36,6 +39,11 @@ function App() {
                 <Route path="/viewUserProfile/:userId" element={<ViewUserProfile authToken={authToken} />} />
                 <Route path="/Fullpost/:postId" element={<Fullpost />} />
                 <Route path="/menu" element={<Menu authToken={authToken} />} />
+                <Route path="/get_group/:groupId" element={<ViewGroup />} />
+                <Route path="/joined_groups/:groupId" element={<ViewGroup />} />
+             
+
+
              
               </Routes>
             </div>

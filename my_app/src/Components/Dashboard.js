@@ -13,6 +13,8 @@ import GetPostWidget from './GetPostWidget';
 import MessageList from './MessageList';
 import GetFullName from './GetFullname';
 import GroupsComponent from './getGroups';
+import GetJoinedGroupsWidget from './getGroupJoined';
+import ViewGroup from './ViewGroup';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -30,6 +32,8 @@ const Dashboard = () => {
   const [showAllCategories, setShowAllCategories] = useState(true);
   const [chosenCategory, setChosenCategory] = useState(null);
   const [showViewGroups,setShowViewGroups] = useState(false)
+  const [showGroupDetails, setShowGroupDetails] = useState(false)
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -74,6 +78,7 @@ const Dashboard = () => {
     setShowCreateGroupForm(false);
     setShowSearchResults(false);
     setShowViewGroups(false);
+    setShowGroupDetails(false)
     if (!showSidebar) {
       setShowSidebar(true);
     }
@@ -85,6 +90,7 @@ const Dashboard = () => {
     setShowCreateGroupForm(false);
     setShowSearchResults(false);
     setShowViewGroups(false);
+    setShowGroupDetails(false)
     if (!showSidebar) {
       setShowSidebar(true);
     }
@@ -96,6 +102,7 @@ const Dashboard = () => {
     setShowCreatePostPage(false);
     setShowSearchResults(false);
     setShowViewGroups(false);
+    setShowGroupDetails(false)
     if (!showSidebar) {
       setShowSidebar(true);
     }
@@ -106,6 +113,18 @@ const toggleViewGroups = () => {
     setShowMessages(false);
     setShowCreatePostPage(false);
     setShowSearchResults(false);
+    setShowGroupDetails(false)
+    if (!showSidebar) {
+      setShowSidebar(true);
+    }
+}
+const toggleGroupDetails = () => {
+
+  setShowGroupDetails(!showGroupDetails)
+    setShowMessages(false);
+    setShowCreatePostPage(false);
+    setShowSearchResults(false);
+    setShowViewGroups(false);
     if (!showSidebar) {
       setShowSidebar(true);
     }
@@ -131,7 +150,11 @@ const toggleViewGroups = () => {
       setChosenCategory(category);
     }
   };
-  
+  const handleGroupClick = (groupId) => {
+    // Logic to navigate to the ViewGroup component with the selected group ID
+    setSelectedGroupId(groupId);
+    setShowGroupDetails(true);
+  }
   const handleReply = async (messageId) => {
     try {
       // Find the message by ID
@@ -231,14 +254,15 @@ const toggleViewGroups = () => {
                     </ul>
                   </div>
                 )}
-        {!showMessages && !showCreateGroupForm && !showCreatePostPage && !showSearchResults && !showViewGroups && (
+        {!showMessages && !showCreateGroupForm && !showCreatePostPage && !showSearchResults && !showViewGroups && !showGroupDetails &&(
             <ViewPostPage />
           )}
           
           {showMessages && <MessageList userId={userId} />}
           {showCreateGroupForm && <CreateGroupForm />}
           {showCreatePostPage && <CreatePostPage toggleCreatePostPage={toggleCreatePostPage} />}
-          {showViewGroups && <GroupsComponent />}
+         {showViewGroups && <GroupsComponent />}
+          {showGroupDetails && <ViewGroup />}
           {showSearchResults && (
   <div>
     {/* Render message if no matching results found */}
@@ -284,7 +308,8 @@ const toggleViewGroups = () => {
         
         <td className="sidebar">
           <div className="sidebar-item"><GetPostWidget /></div>
-          <GetGroupWidget />
+          <GetGroupWidget  handleGroupClick={handleGroupClick} />
+          <GetJoinedGroupsWidget  handleGroupClick={handleGroupClick}/>
         </td>
       </tr>
     </tbody>

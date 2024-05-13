@@ -343,7 +343,8 @@ def join_group():
     current_user_id = get_jwt_identity()
     data = request.json
     group_id = data.get('group_id')
-
+    
+    print("Group ID:", group_id)
     group = Group.query.get(group_id)
     if not group:
         return jsonify({'error': 'Group not found'}), 404
@@ -395,6 +396,9 @@ def leave_group():
             # Transfer ownership to another member
             new_owner_membership = Membership.query.filter(Membership.group_id == group_id, Membership.user_id != current_user_id).first()
             group.user_id = new_owner_membership.user_id
+            
+            # Update the role of the new owner to admin
+            new_owner_membership.user_role = 'admin'
         else:
             # Delete the group
             db.session.delete(group)
@@ -405,6 +409,37 @@ def leave_group():
 
     # Return a success message
     return jsonify({'message': 'User left the group successfully'}), 200
+
+# endpoint to get all group joined  by current user
+
+@app.route('/groups_joined', methods=['GET'])
+@jwt_required()
+def get_groups_joined():
+    try:
+        # Get the current user's ID from the JWT token
+        current_user_id = get_jwt_identity()
+
+        # Retrieve the memberships of the current user
+        memberships = Membership.query.filter_by(user_id=current_user_id).all()
+
+        # Extract group IDs from the memberships
+        group_ids = [membership.group_id for membership in memberships]
+
+        # Retrieve the groups joined by the current user
+        groups = Group.query.filter(Group.group_id.in_(group_ids)).all()
+
+        # Create a list of group data
+        groups_data = [{
+            'id': group.group_id,
+            'name': group.group_name
+        } for group in groups]
+        
+        logging.info(f"Groups joined by user {current_user_id}: {groups_data}")
+
+        return jsonify({'groups': groups_data}), 200
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({'error': str(e)}), 500
 
 # Endpoint to get all groups and meberships
 
@@ -443,9 +478,87 @@ def get_groups_with_memberships():
     except Exception as e:
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/get_group/<int:group_id>', methods=['GET'])
+@jwt_required()
+def get_group_details(group_id):
+    try:
+        # Fetch the group details by group_id
+        group = Group.query.filter_by(group_id=group_id).first()
+        if not group:
+            return jsonify({'error': 'Group not found'}), 404
 
+        # Fetch all members of the group
+        memberships = Membership.query.filter_by(group_id=group_id).all()
+        members = [{'user_id': membership.user_id, 'user_role': membership.user_role} for membership in memberships]
+
+        # Check if the current user is a member of this group
+        current_user_id = get_jwt_identity()
+        is_member = any(member['user_id'] == current_user_id for member in members)
+
+        group_data = {
+            'group_id': group.group_id,
+            'group_name': group.group_name,
+            'description': group.description,
+            'members': members,
+            'is_member': is_member
+        }
+
+        return jsonify({'group': group_data}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     
-    
+@app.route('/joined_groups/<int:group_id>', methods=['GET'])
+@jwt_required()
+def groups_joined(group_id):
+    try:
+        # Get the current user's ID from the JWT token
+        current_user_id = get_jwt_identity()
+
+        # Retrieve the group memberships of the current user for the specified group
+        memberships = Membership.query.filter_by(user_id=current_user_id, group_id=group_id).all()
+
+        # Retrieve the group details
+        group = Group.query.filter_by(group_id=group_id).first()
+
+        if group:
+            # Print group details
+            print("Group ID:", group.group_id)
+            print("Group Name:", group.group_name)
+            print("Group Description:", group.description)
+
+            # Print group memberships
+            print("Group Memberships:")
+            memberships_data = []
+            for membership in memberships:
+                print("- User ID:", membership.user_id)
+                print("- User Role:", membership.user_role)  
+
+                # Retrieve user details
+                user = User.query.get(membership.user_id)
+                if user:
+                    user_data = {
+                        'user_id': user.user_id,
+                        'user_name': f"{user.first_name} {user.last_name}"
+                    }
+                    memberships_data.append(user_data)
+
+            # Construct the response data
+            group_data = {
+                'id': group.group_id,
+                'name': group.group_name,
+                'description': group.description,
+                'memberships': memberships_data
+            }
+            return jsonify({'group': group_data}), 200
+        else:
+            return jsonify({'error': 'Group not found'}), 404
+
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({'error': str(e)}), 500
+
+     
 # Route for admin to remove a user from a group
 @app.route('/remove_user_from_group', methods=['POST'])
 @jwt_required()

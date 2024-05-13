@@ -34,6 +34,7 @@ const ViewPosts = ({setSelectedPost}) => {
 
   useEffect(() => {
     fetchFollowedUsers();
+    
   }, []);
 
   const fetchPosts = async () => {
@@ -48,6 +49,7 @@ const ViewPosts = ({setSelectedPost}) => {
         acc[postIds[index]] = response.data;
         return acc;
       }, {});
+      
       setComments(commentsData);
       fetchReactions(postIds);
     } catch (error) {

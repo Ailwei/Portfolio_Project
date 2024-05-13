@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
-const GetGroupWidget = ({ handleGroupClick }) => {
-  const [userGroups, setUserGroups] = useState([]);
+
+const GetJoinedGroupsWidget = ({handleGroupClick}) => {
+  const [joinedGroups, setJoinedGroups] = useState([]);
   const [authToken, setAuthToken] = useState('');
+
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -14,20 +16,22 @@ const GetGroupWidget = ({ handleGroupClick }) => {
   }, []);
 
   useEffect(() => {
-    const fetchUserGroups = async () => {
+    const fetchJoinedGroups = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:5000/view_current_user_profile', {
+        const response = await axios.get(`http://127.0.0.1:5000/groups_joined`, {
           headers: {
             Authorization: `Bearer ${authToken}`
           }
         });
-        setUserGroups(response.data.groups);
+        
+        setJoinedGroups(response.data.groups);
+        console.log('Groups Joined:', response.data.groups);
       } catch (error) {
-        console.error('Error fetching user groups:', error);
+        console.error('Error fetching joined groups:', error);
       }
     };
 
-    fetchUserGroups();
+    fetchJoinedGroups();
   }, [authToken]);
 
   const leaveGroup = async (groupId) => {
@@ -40,7 +44,7 @@ const GetGroupWidget = ({ handleGroupClick }) => {
         }
       });
       console.log(response.data.message);
-      setUserGroups(prevGroups => prevGroups.filter(group => group.id !== groupId));
+      setJoinedGroups(prevGroups => prevGroups.filter(group => group.id !== groupId));
     } catch (error) {
       console.error('Error leaving group:', error);
     }
@@ -48,12 +52,12 @@ const GetGroupWidget = ({ handleGroupClick }) => {
 
   return (
     <div>
-      <h3>Groups Owned</h3>
+      <h3>Groups Joined</h3>
       <ul>
-        {userGroups.map(group => (
+        {joinedGroups.map(group => (
           <li key={group.id}>
             <Link to={`/get_group/${group.id}`} onClick={() => handleGroupClick(group.id)}>{group.name}</Link>
-            <button onClick={() => leaveGroup(group.id)}>Leave</button> {/* Button to leave the group */}
+            <button onClick={() => leaveGroup(group.id)}>Leave</button>
           </li>
         ))}
       </ul>
@@ -61,4 +65,4 @@ const GetGroupWidget = ({ handleGroupClick }) => {
   );
 };
 
-export default GetGroupWidget;
+export default GetJoinedGroupsWidget;

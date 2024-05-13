@@ -42,7 +42,8 @@ const GroupsComponent = ({ currentUser }) => {
 
     const joinGroup = async (groupId) => {
         try {
-            await axios.post('http://127.0.0.1:5000/join_group', {
+            console.log("Group ID:", groupId);
+            await axios.post('http://127.0.0.1:5000/join_group', { group_id: groupId } , {
                 headers: {
                     Authoriation: `Bearer ${token}`
                 }
