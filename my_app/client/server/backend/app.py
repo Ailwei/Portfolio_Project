@@ -508,38 +508,51 @@ def get_group_details(group_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
+
+@app.route('/view_members/<int:group_id>', methods=['GET'])
+@jwt_required()
+def view_members(group_id):
+    current_user = get_jwt_identity()
+    
+    # Check if the group exists
+    if group_id not in groups:
+        return jsonify(message='Group not found'), 404
+
+    # Check if the current user is a member of the group
+    if group_id not in user_groups.get(current_user, []):
+        return jsonify(message='You are not a member of this group'), 403
+
+    # Retrieve members of the group
+    group_members = groups[group_id]
+    return jsonify(group_id=group_id, members=group_members), 200
+    
+    
 @app.route('/joined_groups/<int:group_id>', methods=['GET'])
 @jwt_required()
 def groups_joined(group_id):
     try:
-        # Get the current user's ID from the JWT token
-        current_user_id = get_jwt_identity()
-
-        # Retrieve the group memberships of the current user for the specified group
-        memberships = Membership.query.filter_by(user_id=current_user_id, group_id=group_id).all()
-
+        # Join the Membership and User tables to retrieve full names
+       
         # Retrieve the group details
         group = Group.query.filter_by(group_id=group_id).first()
 
         if group:
-            # Print group details
-            print("Group ID:", group.group_id)
-            print("Group Name:", group.group_name)
-            print("Group Description:", group.description)
+            # Retrieve the group memberships
+            memberships = db.session.query(Membership, User).join(User).filter(Membership.group_id == group_id).all()
 
-            # Print group memberships
-            print("Group Memberships:")
+
+            # Collect membership details
             memberships_data = []
-            for membership in memberships:
-                print("- User ID:", membership.user_id)
-                print("- User Role:", membership.user_role)  
-
-                # Retrieve user details
+            app.logger.info(f"Memberships retrieved for group {group_id}:")
+            for membership, user in memberships:
+                app.logger.info(f"User Full Name: {user.first_name} {user.last_name}, User Role: {membership.user_role}")
+            
                 user = User.query.get(membership.user_id)
                 if user:
                     user_data = {
                         'user_id': user.user_id,
-                        'user_name': f"{user.first_name} {user.last_name}"
+                        'full_name': f"{user.first_name} {user.last_name}",
+                        'user_role': membership.user_role
                     }
                     memberships_data.append(user_data)
 

@@ -14,6 +14,7 @@ const ViewGroup = () => {
   const [loadingJoinedGroups, setLoadingJoinedGroups] = useState(true);
   const [errorGroup, setErrorGroup] = useState(null);
   const [errorJoinedGroups, setErrorJoinedGroups] = useState(null);
+  const [memberships, setMemberships] = useState([]);
 
   useEffect(() => {
     const fetchGroupDetails = async () => {
@@ -49,6 +50,17 @@ const ViewGroup = () => {
       }
     };
 
+    const fetchGroupMemberships = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/joined_groups/${groupId}`);
+        setMemberships(response.data.group.memberships);
+      } catch (error) {
+        console.error('Error fetching group memberships:', error);
+      }
+    };
+
+
+    fetchGroupMemberships();
     fetchJoinedGroups();
     fetchGroupDetails();
   }, [groupId]);
@@ -67,23 +79,18 @@ const ViewGroup = () => {
 
   return (
     <div>
-      <h2>{group.group_name}</h2>
-      <p>{group.user_role}</p>
-      <p>{group.description}</p>
-      <h3>Members:</h3>
-      {group.memberships && group.memberships.length > 0 ? (
-        <ul>
-          {group.memberships.map(membership => (
-            <li key={membership.user_id}>
-              {membership.user_name || 'Unknown User'}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div>No members available</div>
-      )}
-    </div>
-  );
+    <h2>{group.group_name}</h2>
+    <p>{group.description}</p>
+    <h3>Members:</h3>
+    <ul>
+      {memberships.map((membership) => (
+        <li key={membership.user_id}>
+          {membership.full_name} - {membership.user_role}
+        </li>
+      ))}
+    </ul>
+  </div>
+);
 };
 
 export default ViewGroup;
