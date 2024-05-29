@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import GetGroupWidget from './GetGroupWidget';
 import GetJoinedGroupsWidget from './getGroupJoined';
+import '../styles/groupdetails.css';
+import GroupPost from './groupPost';
 
 const ViewGroup = () => {
   const { groupId } = useParams();
