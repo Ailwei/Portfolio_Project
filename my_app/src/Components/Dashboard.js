@@ -15,6 +15,7 @@ import GetFullName from './GetFullname';
 import GroupsComponent from './getGroups';
 import GetJoinedGroupsWidget from './getGroupJoined';
 import ViewGroup from './ViewGroup';
+import FriendsList from './FriendList';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -310,6 +311,8 @@ const toggleGroupDetails = () => {
           <div className="sidebar-item"><GetPostWidget /></div>
           <GetGroupWidget  handleGroupClick={handleGroupClick} />
           <GetJoinedGroupsWidget  handleGroupClick={handleGroupClick}/>
+          <FriendsList friendType="followers" />
+          <FriendsList friendType="following" />
         </td>
       </tr>
     </tbody>

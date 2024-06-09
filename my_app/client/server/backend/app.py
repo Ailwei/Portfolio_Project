@@ -38,7 +38,7 @@ with app.app_context():
 @app.route("/")
 def hello_world():
     return "Hello, World!"
- 
+
 @app.route("/signup", methods=["POST"])
 def signup():
     first_name = request.json["first_name"]
@@ -1021,3 +1021,41 @@ def get_post_reactions(post_id):
     print(f'Likes count for post {post_id}: {likes_count}')
     
     return jsonify(response_data)
+
+import base64
+
+@app.route('/get_friends', methods=['GET'])
+@jwt_required()
+def get_current_user_friends():
+    try:
+        current_user_id = get_jwt_identity()
+        logging.info(f'Current user ID from JWT: {current_user_id}')
+        
+        friend_type = request.args.get('type')  # Retrieve the type of friends to fetch: followers or following
+
+        current_user = User.query.get(current_user_id)
+        if current_user:
+            if friend_type == 'followers':
+                friends = db.session.query(User).join(Follow, Follow.user_id == User.user_id)\
+                    .filter(Follow.followed_user_id == current_user_id).all()
+            elif friend_type == 'following':
+                friends = db.session.query(User).join(Follow, Follow.followed_user_id == User.user_id)\
+                    .filter(Follow.user_id == current_user_id).all()
+            else:
+                return jsonify({"error": "Invalid friend type. Use 'followers' or 'following'."}), 400
+
+            friends_data = [{
+                'user_id': friend.user_id,
+                'first_name': friend.first_name,
+                'last_name': friend.last_name,
+                'profile_picture': base64.b64encode(friend.profile_picture).decode('utf-8') if friend.profile_picture else 'default',
+            } for friend in friends]
+
+            logging.info(f'{friend_type.capitalize()} data: {friends_data}')
+            return jsonify(friends_data)
+        else:
+            logging.error('Current user not found')
+            return jsonify({"error": "User not found"}), 404
+    except Exception as e:
+        logging.error(f'Error occurred: {e}')
+        return jsonify({"error": "An error occurred"}), 500

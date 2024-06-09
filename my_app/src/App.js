@@ -14,6 +14,7 @@ import CreateGroupForm from './Components/CreateGroup';
 import Menu from './Components/Menu';
 import ViewGroup from './Components/ViewGroup';
 import GetJoinedGroupsWidget from './Components/getGroupJoined';
+import FriendsList from './Components/FriendList';
 
 
 function App() {
@@ -41,10 +42,7 @@ function App() {
                 <Route path="/menu" element={<Menu authToken={authToken} />} />
                 <Route path="/get_group/:groupId" element={<ViewGroup />} />
                 <Route path="/joined_groups/:groupId" element={<ViewGroup />} />
-             
-
-
-             
+                <Route path="/get_friends/:userId" element={<FriendsList />} />
               </Routes>
             </div>
           </Router>
