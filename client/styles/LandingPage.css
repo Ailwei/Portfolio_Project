@@ -1,0 +1,153 @@
+/* LandingPage.css */
+
+/* General Styles */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+a {
+  text-decoration: none;
+  color: #007bff;
+}
+
+/* Header Styles */
+header {
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav ul li {
+  display: inline;
+  margin-right: 20px;
+}
+
+/* Hero Section Styles */
+.hero {
+  background-color: #007bff;
+  color: #fff;
+  padding: 100px 20px;
+  text-align: center;
+}
+
+.hero-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.hero-content h2 {
+  margin-top: 0;
+  font-size: 36px;
+}
+
+.hero-content p {
+  margin-bottom: 40px;
+  font-size: 18px;
+}
+
+.button {
+  display: inline-block;
+  background-color: #fff;
+  color: #007bff;
+  padding: 12px 24px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #f0f0f0;
+}
+
+/* Feature Section Styles */
+.features {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.feature {
+  flex: 1;
+  max-width: 300px;
+  margin: 20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.feature h3 {
+  margin-top: 0;
+  font-size: 24px;
+}
+
+.feature p {
+  font-size: 16px;
+}
+
+/* Testimonials Section Styles */
+.testimonials {
+  padding: 100px 20px;
+  text-align: center;
+}
+
+.testimonial {
+  max-width: 100%;
+  margin: 0 auto 40px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.testimonial blockquote {
+  margin: 0;
+  font-size: 20px;
+}
+
+.testimonial cite {
+  font-style: normal;
+  font-size: 18px;
+}
+
+/* Join Community Section Styles */
+.join-community {
+  background-color: #007bff;
+  color: #fff;
+  padding: 100px 20px;
+  text-align: center;
+}
+
+.join-community p {
+  margin-bottom: 40px;
+  font-size: 18px;
+}
+
+/* Footer Styles */
+footer {
+  background-color: #fff;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+html {
+  scroll-behavior: smooth;
+}

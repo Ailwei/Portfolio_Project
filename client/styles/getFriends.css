@@ -1,0 +1,63 @@
+.friends-list-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    margin: 1rem 0;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .friends-list-container h2 {
+    font-size: 1.5rem;
+    color: #333; 
+    margin-bottom: 1rem;
+  }
+  .friends-list-container ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  .friends-list-container li {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+    justify-content: space-between; 
+  }
+  
+  .friends-list-container li:last-child {
+    border-bottom: none;
+  }
+  .friends-list-container img {
+    width: 50px;
+    height: 50px; 
+    border-radius: 50%; 
+    margin-right: 10px; 
+  }
+  .friends-list-container a {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+    font-size: smaller;
+  }
+  .friends-list-container a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+  }
+  .friends-list-container .message-button {
+    background-color: #007bff;
+    color: #fff; 
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .friends-list-container .message-button:hover {
+    background-color: #0056b3;
+  }
+  .friends-list-container .error {
+    color: red;
+  }
+  

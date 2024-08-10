@@ -1,0 +1,25 @@
+.message-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .inbox-container {
+    margin-bottom: 20px;
+  }
+  
+  .send-container,
+  .reply-container {
+    margin-top: 20px;
+  }
+  
+  .message-item {
+    margin-bottom: 10px;
+  }
+  
+  button {
+    margin-left: 10px;
+  }
+  

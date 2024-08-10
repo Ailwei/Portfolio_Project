@@ -1,0 +1,36 @@
+.group-pages-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .group-pages-container h2 {
+    margin-bottom: 10px;
+  }
+  
+  .group-pages-container input {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .group-pages-container button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+  
+  .group-pages-container button:hover {
+    background-color: #0056b3;
+  }
+  
+  .group-pages-container button:last-child {
+    margin-right: 0;
+  }
+  
