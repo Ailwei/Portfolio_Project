@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import '../../styles/CreatePost.css';
+import '../../styles/Createpost.css';
 
 function CreatePost() {
   const [title, setTitle] = useState('');
