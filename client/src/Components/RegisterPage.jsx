@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
+import PropTypes from 'prop-types';
 import '../../styles/RegisterPage.css';
 
 const RegisterPage = ({ Error, setError }) => {
@@ -10,15 +11,17 @@ const RegisterPage = ({ Error, setError }) => {
   const [password, setPassword] = useState('');
   const [comfirmPassword, setComfirmPassword] = useState('');
   const navigate = useNavigate();
-  const [registerError, setRegisterError] = useState(''); 
+  const [registerError, setRegisterError] = useState('');
 
   const registerUser = () => {
-    if (!firstName || !lastName ||  !email || !password || !comfirmPassword) {
+    if (!firstName || !lastName || !email || !password || !comfirmPassword) {
       setRegisterError('Please fill in all fields.');
+      setError('Please fill in all fields.');
       return;
     }
     if (password !== comfirmPassword) {
       setRegisterError('Passwords do not match.');
+      setError('Passwords do not match.');
       return;
     }
 
@@ -31,14 +34,18 @@ const RegisterPage = ({ Error, setError }) => {
     })
     .then(function (response) {
       console.log(response);
+      setRegisterError('');
+      setError('');
       navigate("/login");
     })
     .catch(function (error) {
       console.log(error);
       if (error.response && error.response.status === 401) {
         setRegisterError("Invalid credentials");
+        setError("Invalid credentials");
       } else {
-        setRegisterError("email already exists");
+        setRegisterError("Email already exists");
+        setError("Email already exists");
       }
     });
   };
@@ -73,8 +80,12 @@ const RegisterPage = ({ Error, setError }) => {
         <p className="login-link">Already have an account? <a href="/login">Login</a></p>
       </div>
     </div>
-
   );
 }
+
+RegisterPage.propTypes = {
+  Error: PropTypes.string,
+  setError: PropTypes.func.isRequired,
+};
 
 export default RegisterPage;
