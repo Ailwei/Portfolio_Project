@@ -14,7 +14,7 @@ export default function ProfileUpdatePage({ authToken }) {
     const navigate = useNavigate();
 
     const fetchUserData = () => {
-        axios.get('http://13.53.199.9/update_profile', {
+        axios.get('https://13.53.199.9/update_profile', {
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${authToken}`
@@ -65,7 +65,7 @@ export default function ProfileUpdatePage({ authToken }) {
             mimetype: profilePicture.type
         };
 
-        axios.post('http://13.53.199.9/update_profile', requestData, {
+        axios.post('https://13.53.199.9/update_profile', requestData, {
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${authToken}`

@@ -15,9 +15,9 @@ const Fullpost = () => {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await axios.get(`http://13.53.199.9/get_post/${postId}`);
+        const response = await axios.get(`https://13.53.199.9/get_post/${postId}`);
         setPost(response.data);
-        const commentsResponse = await axios.get(`http://13.53.199.9/get_comments/${postId}`);
+        const commentsResponse = await axios.get(`https://13.53.199.9/get_comments/${postId}`);
         setComments(commentsResponse.data);
       } catch (error) {
         console.error('Error fetching post:', error);
@@ -29,7 +29,7 @@ const Fullpost = () => {
 
   const handleLike = async () => {
     try {
-      const response = await axios.post(`http://13.53.199.9/like/${postId}`);
+      const response = await axios.post(`https//13.53.199.9/like/${postId}`);
       console.log('Post liked:', response.data);
     
     } catch (error) {
@@ -39,7 +39,7 @@ const Fullpost = () => {
 
   const handleComment = async () => {
     try {
-      const response = await axios.post(`http://13.53.199.9/add_comment/${postId}`, { comment: commentContent });
+      const response = await axios.post(`https://13.53.199.9/add_comment/${postId}`, { comment: commentContent });
       console.log('Comment added:', response.data);
       setComments([...comments, response.data]);
       setCommentContent('');

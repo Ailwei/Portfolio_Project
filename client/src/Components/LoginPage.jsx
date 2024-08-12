@@ -23,7 +23,7 @@ const LoginPage = () => {
                 setLoginError('Email and password are required fields')
                 return;
             }
-            const response = await axios.post('http://13.53.199.9/login', {
+            const response = await axios.post('https://13.53.199.9/login', {
                 email: email,
                 password: password
             });

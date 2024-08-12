@@ -23,7 +23,6 @@ const CreateGroupForm = (toggleCreateGroupForm) => {
   }, []);
 
   const createGroup = async () => {
-    // Check if input fields are empty
     if (!groupData.group.trim() || !groupData.description.trim()) {
       setError('Group name and description cannot be empty');
       navigate('/')
@@ -32,7 +31,7 @@ const CreateGroupForm = (toggleCreateGroupForm) => {
 
     try {
       const response = await axios.post(
-        'http://127.0.0.1:5000/create_group',
+        'https://13.53.199.9/create_group',
         {
           group: groupData.group,
           description: groupData.description,

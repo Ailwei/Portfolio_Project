@@ -25,7 +25,7 @@ const GroupPages = () => {
 
   const createGroup = async () => {
     try {
-      const response = await axios.post('http://13.53.199.9/create_group', {
+      const response = await axios.post('https://13.53.199.9/create_group', {
         group: groupData.group,
         description: groupData.description,
       }, {
@@ -43,7 +43,7 @@ const GroupPages = () => {
 
   const joinGroup = async () => {
     try {
-      const response = await axios.post('http://13.53.199.9/join_group', {
+      const response = await axios.post('https://13.53.199.9/join_group', {
         group_id: groupData.group_id,
       }, {
         headers: {
@@ -59,7 +59,7 @@ const GroupPages = () => {
 
   const leaveGroup = async () => {
     try {
-      const response = await axios.post('http://13.53.199.9/leave_group', {
+      const response = await axios.post('https://13.53.199.9/leave_group', {
         group_id: groupData.group_id,
       }, {
         headers: {
@@ -75,7 +75,7 @@ const GroupPages = () => {
 
   const removeUserFromGroup = async () => {
     try {
-      const response = await axios.post('http://13.53.199.9/remove_user_from_group', {
+      const response = await axios.post('https://13.53.199.9/remove_user_from_group', {
         user_id: groupData.newUserId,
         group_id: groupData.group_id,
 
@@ -94,7 +94,7 @@ const GroupPages = () => {
 
   const removePostFromGroup = async () => {
     try {
-      const response = await axios.post('http://13.53.199.9/remove_post', {
+      const response = await axios.post('https://13.53.199.9/remove_post', {
         post_id: groupData.post_id,
       }, {
         headers: {

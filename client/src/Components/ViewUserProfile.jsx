@@ -24,7 +24,7 @@ const ViewUserProfile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get(`http://13.53.199.9/view_user_profile/${userId}`, {
+        const response = await axios.get(`https://13.53.199.9/view_user_profile/${userId}`, {
           headers: {
             Authorization: `Bearer ${authToken}`
           }
@@ -48,8 +48,8 @@ const ViewUserProfile = () => {
   const handleBlockUserorUnblockUser = async () => {
     try {
       const response = profile.blocked ? 
-        await axios.post(`http://13.53.199.9/unblock_user`, { user_id: userId, group_id: groupId }, { headers: { Authorization: `Bearer ${authToken}` } }) :
-        await axios.post(`http://13.53.199.9/block_user`, { user_id: userId, group_id: groupId }, { headers: { Authorization: `Bearer ${authToken}` } });
+        await axios.post(`https://13.53.199.9/unblock_user`, { user_id: userId, group_id: groupId }, { headers: { Authorization: `Bearer ${authToken}` } }) :
+        await axios.post(`https://13.53.199.9/block_user`, { user_id: userId, group_id: groupId }, { headers: { Authorization: `Bearer ${authToken}` } });
 
       console.log(profile.blocked ? 'User unblocked:' : 'User blocked:', response.data);
     } catch(error) {
@@ -63,7 +63,7 @@ const ViewUserProfile = () => {
 
   const handleSendMessage = async () => {
     try {
-      const response = await axios.post(`http://13.53.199.9/send_message/${userId}`, { user_id: userId, content: messageContent }, { headers: { Authorization: `Bearer ${authToken}` } });
+      const response = await axios.post(`https://13.53.199.9/send_message/${userId}`, { user_id: userId, content: messageContent }, { headers: { Authorization: `Bearer ${authToken}` } });
       console.log('Message sent:', response.data);
       setMessageContent('');
       setShowMessageInput(false);
@@ -74,7 +74,7 @@ const ViewUserProfile = () => {
   
   const fetchFollowedUsers = async () => {
     try {
-      const response = await axios.get('http://13.53.199.9/followed_users', {
+      const response = await axios.get('https://13.53.199.9/followed_users', {
         headers: {
           Authorization: `Bearer ${authToken}`
         }
@@ -93,7 +93,7 @@ const ViewUserProfile = () => {
       console.log('userId parameter:', userId);
 
       if (followedUsers.includes(profile.userId)) {
-        await axios.post(`http://13.53.199.9/unfollow/${userId}`, {}, {
+        await axios.post(`https://13.53.199.9/unfollow/${userId}`, {}, {
           headers: {
             Authorization: `Bearer ${authToken}`
           }
@@ -106,7 +106,7 @@ const ViewUserProfile = () => {
         // setFollowedUsers(followedUsers.filter(id => id !== userId));
       } else {
         // User is not followed, follow them
-        await axios.post(`http://13.53.199.9/follow/${userId}`, {}, {
+        await axios.post(`https://13.53.199.9/follow/${userId}`, {}, {
           headers: {
             Authorization: `Bearer ${authToken}`
           }

@@ -29,7 +29,7 @@ const FriendsList = ({ friendType }) => {
         }
 
         console.log(`Sending request to fetch current user ${friendType}`);
-        const response = await axios.get(`http://13.53.199.9/get_friends?type=${friendType}`, {
+        const response = await axios.get(`https://13.53.199.9/get_friends?type=${friendType}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

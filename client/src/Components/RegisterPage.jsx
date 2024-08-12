@@ -22,7 +22,7 @@ const RegisterPage = ({ Error, setError }) => {
       return;
     }
 
-    axios.post('http://13.53.199.9/signup', {
+    axios.post('https://13.53.199.9/signup', {
       first_name: firstName,
       last_name: lastName,
       email: email,

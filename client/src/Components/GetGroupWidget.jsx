@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import '../../styles/GetGroupWidget.css'; // Import CSS file
+import '../../styles/GetGroupWidget.css';
 
 const GetGroupWidget = ({ handleGroupClick }) => {
   const [userGroups, setUserGroups] = useState([]);
@@ -17,7 +17,7 @@ const GetGroupWidget = ({ handleGroupClick }) => {
   useEffect(() => {
     const fetchUserGroups = async () => {
       try {
-        const response = await axios.get('http://13.53.199.9/view_current_user_profile', {
+        const response = await axios.get('https://13.53.199.9/view_current_user_profile', {
           headers: {
             Authorization: `Bearer ${authToken}`
           }
@@ -33,7 +33,7 @@ const GetGroupWidget = ({ handleGroupClick }) => {
 
   const leaveGroup = async (groupId) => {
     try {
-      const response = await axios.post('http://13.53.199.9/leave_group', {
+      const response = await axios.post('https://13.53.199.9/leave_group', {
         group_id: groupId
       }, {
         headers: {

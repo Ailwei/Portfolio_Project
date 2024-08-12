@@ -7,7 +7,6 @@ const GroupsComponent = ({ currentUser }) => {
     const [token, setToken] = useState(null);
 
     useEffect(() => {
-        // Retrieve authentication token from local storage when component mounts
         const authtoken = localStorage.getItem('authToken');
         if (authtoken) {
             setToken(authtoken);
@@ -22,7 +21,7 @@ const GroupsComponent = ({ currentUser }) => {
 
     const fetchGroups = async () => {
         try {
-            const response = await axios.get('http://13.53.199.9/groups', {
+            const response = await axios.get('https://13.53.199.9/groups', {
                 headers: {
                     Authoriation: `Bearer ${token}`
                 }
@@ -44,7 +43,7 @@ const GroupsComponent = ({ currentUser }) => {
     const joinGroup = async (groupId) => {
         try {
             console.log("Group ID:", groupId);
-            await axios.post('http://13.53.199.9/join_group', { group_id: groupId } , {
+            await axios.post('https://13.53.199.9/join_group', { group_id: groupId } , {
                 headers: {
                     Authoriation: `Bearer ${token}`
                 }
@@ -57,7 +56,7 @@ const GroupsComponent = ({ currentUser }) => {
 
     const leaveGroup = async (groupId) => {
         try {
-            await axios.post('http://13.53.199.9/leave_group', {
+            await axios.post('https://13.53.199.9/leave_group', {
                 headers: {
                     Authoriation: `Bearer ${token}`
                 }
