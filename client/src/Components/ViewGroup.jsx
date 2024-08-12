@@ -22,7 +22,7 @@ const ViewGroup = () => {
     const fetchGroupDetails = async () => {
       const token = localStorage.getItem('authToken');
       try {
-        const response = await axios.get(`http://localhost:5000/get_group/${groupId}`, {
+        const response = await axios.get(`http://13.53.199.9/get_group/${groupId}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -38,7 +38,7 @@ const ViewGroup = () => {
     const fetchJoinedGroups = async () => {
       const token = localStorage.getItem('authToken');
       try {
-        const response = await axios.get(`http://localhost:5000/joined_groups/${groupId}`, {
+        const response = await axios.get(`http://13.53.199.9/joined_groups/${groupId}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -54,7 +54,7 @@ const ViewGroup = () => {
 
     const fetchGroupMemberships = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/joined_groups/${groupId}`);
+        const response = await axios.get(`http://13.53.199.9/joined_groups/${groupId}`);
         setMemberships(response.data.group.memberships);
       } catch (error) {
         console.error('Error fetching group memberships:', error);

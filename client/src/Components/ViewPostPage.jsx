@@ -41,7 +41,7 @@ const ViewPosts = ({setSelectedPost}) => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get(`http://127.0.0.1:5000/get_posts?page=${currentPage}`);
+      const response = await axios.get(`http://13.53.199.9/get_posts?page=${currentPage}`);
       let fetchedPosts = response.data.posts;
 
       fetchedPosts = fetchedPosts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -50,7 +50,7 @@ const ViewPosts = ({setSelectedPost}) => {
       setTotalPages(response.data.total_pages);
       setCurrentUserId(response.data.current_user_id);
       const postIds = fetchedPosts.map(post => post.id);
-      const commentsResponse = await Promise.all(postIds.map(postId => axios.get(`http://127.0.0.1:5000/get_comments/${postId}`)));
+      const commentsResponse = await Promise.all(postIds.map(postId => axios.get(`http://13.53.199.9/get_comments/${postId}`)));
       const commentsData = commentsResponse.reduce((acc, response, index) => {
         acc[postIds[index]] = response.data;
         return acc;
@@ -87,7 +87,7 @@ const ViewPosts = ({setSelectedPost}) => {
 
   const handleComment = async (postId) => {
     try {
-      const response = await axios.post(`http://127.0.0.1:5000/add_comment/${postId}`, { comment: commentContent }, {
+      const response = await axios.post(`http://13.53.199.9/add_comment/${postId}`, { comment: commentContent }, {
         headers: {
           Authorization: `Bearer ${authToken}`
         }
@@ -101,7 +101,7 @@ const ViewPosts = ({setSelectedPost}) => {
   };
   const fetchFollowedUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/followed_users', {
+      const response = await axios.get('http://13.53.199.9/followed_users', {
         headers: {
           Authorization: `Bearer ${authToken}`
         }
@@ -117,7 +117,7 @@ const ViewPosts = ({setSelectedPost}) => {
   const handleFollow = async (userId) => {
     if (userId) {
       if (followedUsers.includes(userId)) {
-        await axios.post(`http://localhost:5000/unfollow/${userId}`, {}, {
+        await axios.post(`http://13.53.199.9/unfollow/${userId}`, {}, {
           headers: {
             Authorization: `Bearer ${authToken}`
           }
@@ -126,7 +126,7 @@ const ViewPosts = ({setSelectedPost}) => {
         setFollowedUsers(updatedFollowedUsers);
         localStorage.setItem('followedUsers', JSON.stringify(updatedFollowedUsers));
       } else {
-        await axios.post(`http://localhost:5000/follow/${userId}`, {}, {
+        await axios.post(`http://13.53.199.9/follow/${userId}`, {}, {
           headers: {
             Authorization: `Bearer ${authToken}`
           }
@@ -146,7 +146,7 @@ const ViewPosts = ({setSelectedPost}) => {
   const handlePostClick = async (postId) => {
     navigate(`/Fullpost/${postId}`);
     try {
-      const response = await axios.get(`http://127.0.0.1:5000/get_post/${postId}`);
+      const response = await axios.get(`http://13.53.199.9/get_post/${postId}`);
       setSelectedPost(response.data);
     } catch (error) {
       console.error('Error fetching post:', error);
@@ -155,7 +155,7 @@ const ViewPosts = ({setSelectedPost}) => {
   const fetchReactions = async (postIds) => {
     try {
       const reactionsResponse = await Promise.all(postIds.map(postId =>
-        axios.get(`http://127.0.0.1:5000/posts/${postId}/reactions`)
+        axios.get(`http://13.53.199.9/posts/${postId}/reactions`)
       ));
       const reactionsData = reactionsResponse.reduce((acc, response, index) => {
         acc[postIds[index]] = response.data;
@@ -184,7 +184,7 @@ const ViewPosts = ({setSelectedPost}) => {
       const isLiked = !likedPosts[postId]?.clicked;
       console.log('isLiked:', isLiked);
   
-      await axios.post(`http://127.0.0.1:5000/reactions`,  
+      await axios.post(`http://13.53.199.9/reactions`,  
         {
           user_id: currentUserId,
           post_id: postId,

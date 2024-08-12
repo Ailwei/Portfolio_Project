@@ -22,7 +22,7 @@ const ReceiveMessage = ({ userId }) => {
           return;
         }
 
-        const response = await axios.get(`http://localhost:5000/get_messages/${userId}`, {
+        const response = await axios.get(`http://13.53.199.9/get_messages/${userId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

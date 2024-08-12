@@ -35,7 +35,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUserId = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/get_user_id');
+        const response = await axios.get('http://13.53.199.9/get_user_id');
         setUserId(response.data.userId);
       } catch (error) {
         console.error('Error fetching userId:', error);
@@ -114,7 +114,7 @@ const Dashboard = () => {
 
   const handleSearch = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/search?query=${query}&category=${category}`);
+      const response = await axios.get(`http://13.53.199.9/search?query=${query}&category=${category}`);
       setSearchResults(response.data);
       setShowSearchResults(true);
       console.log('Search results:', response.data);

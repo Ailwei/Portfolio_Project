@@ -22,7 +22,7 @@ const RegisterPage = ({ Error, setError }) => {
       return;
     }
 
-    axios.post('http://127.0.0.1:5000/signup', {
+    axios.post('http://13.53.199.9/signup', {
       first_name: firstName,
       last_name: lastName,
       email: email,

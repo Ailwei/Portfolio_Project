@@ -17,7 +17,7 @@ const GetJoinedGroupsWidget = ({ handleGroupClick }) => {
   useEffect(() => {
     const fetchJoinedGroups = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:5000/groups_joined', {
+        const response = await axios.get('http://13.53.199.9/groups_joined', {
           headers: {
             Authorization: `Bearer ${authToken}`
           }
@@ -35,7 +35,7 @@ const GetJoinedGroupsWidget = ({ handleGroupClick }) => {
 
   const leaveGroup = async (groupId) => {
     try {
-      const response = await axios.post('http://127.0.0.1:5000/leave_group', {
+      const response = await axios.post('http://13.53.199.9/leave_group', {
         group_id: groupId
       }, {
         headers: {

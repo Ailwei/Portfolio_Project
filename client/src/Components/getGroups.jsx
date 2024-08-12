@@ -22,7 +22,7 @@ const GroupsComponent = ({ currentUser }) => {
 
     const fetchGroups = async () => {
         try {
-            const response = await axios.get('http://127.0.0.1:5000/groups', {
+            const response = await axios.get('http://13.53.199.9/groups', {
                 headers: {
                     Authoriation: `Bearer ${token}`
                 }
@@ -44,7 +44,7 @@ const GroupsComponent = ({ currentUser }) => {
     const joinGroup = async (groupId) => {
         try {
             console.log("Group ID:", groupId);
-            await axios.post('http://127.0.0.1:5000/join_group', { group_id: groupId } , {
+            await axios.post('http://13.53.199.9/join_group', { group_id: groupId } , {
                 headers: {
                     Authoriation: `Bearer ${token}`
                 }
@@ -57,7 +57,7 @@ const GroupsComponent = ({ currentUser }) => {
 
     const leaveGroup = async (groupId) => {
         try {
-            await axios.post('http://127.0.0.1:5000/leave_group', {
+            await axios.post('http://13.53.199.9/leave_group', {
                 headers: {
                     Authoriation: `Bearer ${token}`
                 }

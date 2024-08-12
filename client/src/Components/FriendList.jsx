@@ -29,14 +29,14 @@ const FriendsList = ({ friendType }) => {
         }
 
         console.log(`Sending request to fetch current user ${friendType}`);
-        const response = await axios.get(`http://localhost:5000/get_friends?type=${friendType}`, {
+        const response = await axios.get(`http://13.53.199.9/get_friends?type=${friendType}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
         console.log('Response data:', response.data);
-        setFriends(response.data || []); // Ensure response.data is an array
+        setFriends(response.data || []);
       } catch (error) {
         if (error.response && error.response.status === 401) {
           console.error('Unauthorized, redirecting to login');

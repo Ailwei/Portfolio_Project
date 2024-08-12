@@ -25,7 +25,7 @@ const GroupPages = () => {
 
   const createGroup = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:5000/create_group', {
+      const response = await axios.post('http://13.53.199.9/create_group', {
         group: groupData.group,
         description: groupData.description,
       }, {
@@ -34,7 +34,7 @@ const GroupPages = () => {
       }
       });
       console.log(response.data.message);
-      // Update state or show success message
+     
     } catch (error) {
       console.error('Error creating group:', error);
       // Handle error
@@ -43,7 +43,7 @@ const GroupPages = () => {
 
   const joinGroup = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:5000/join_group', {
+      const response = await axios.post('http://13.53.199.9/join_group', {
         group_id: groupData.group_id,
       }, {
         headers: {
@@ -51,8 +51,7 @@ const GroupPages = () => {
       }
       });
       console.log(response.data.message);
-      // Update state or show success message
-    } catch (error) {
+       } catch (error) {
       console.error('Error joining group:', error);
       // Handle error
     }
@@ -60,7 +59,7 @@ const GroupPages = () => {
 
   const leaveGroup = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:5000/leave_group', {
+      const response = await axios.post('http://13.53.199.9/leave_group', {
         group_id: groupData.group_id,
       }, {
         headers: {
@@ -68,16 +67,15 @@ const GroupPages = () => {
       }
       });
       console.log(response.data.message);
-      // Update state or show success message
     } catch (error) {
       console.error('Error leaving group:', error);
-      // Handle error
+
     }
   };
 
   const removeUserFromGroup = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:5000/remove_user_from_group', {
+      const response = await axios.post('http://13.53.199.9/remove_user_from_group', {
         user_id: groupData.newUserId,
         group_id: groupData.group_id,
 
@@ -87,16 +85,16 @@ const GroupPages = () => {
       }
       });
       console.log(response.data.message);
-      // Update state or show success message
+  
     } catch (error) {
       console.error('Error removing user from group:', error);
-      // Handle error
+  
     }
   };
 
   const removePostFromGroup = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:5000/remove_post', {
+      const response = await axios.post('http://13.53.199.9/remove_post', {
         post_id: groupData.post_id,
       }, {
         headers: {
@@ -104,10 +102,9 @@ const GroupPages = () => {
       }
       });
       console.log(response.data.message);
-      // Update state or show success message
+    
     } catch (error) {
       console.error('Error removing post from group:', error);
-      // Handle error
     }
   };
 

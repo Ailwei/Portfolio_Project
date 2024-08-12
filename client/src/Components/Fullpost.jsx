@@ -15,9 +15,9 @@ const Fullpost = () => {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:5000/get_post/${postId}`);
+        const response = await axios.get(`http://13.53.199.9/get_post/${postId}`);
         setPost(response.data);
-        const commentsResponse = await axios.get(`http://127.0.0.1:5000/get_comments/${postId}`);
+        const commentsResponse = await axios.get(`http://13.53.199.9/get_comments/${postId}`);
         setComments(commentsResponse.data);
       } catch (error) {
         console.error('Error fetching post:', error);
@@ -29,9 +29,9 @@ const Fullpost = () => {
 
   const handleLike = async () => {
     try {
-      const response = await axios.post(`http://127.0.0.1:5000/like/${postId}`);
+      const response = await axios.post(`http://13.53.199.9/like/${postId}`);
       console.log('Post liked:', response.data);
-      // You may want to update the post data here if needed
+    
     } catch (error) {
       console.error('Error liking post:', error);
     }
@@ -39,9 +39,8 @@ const Fullpost = () => {
 
   const handleComment = async () => {
     try {
-      const response = await axios.post(`http://127.0.0.1:5000/add_comment/${postId}`, { comment: commentContent });
+      const response = await axios.post(`http://13.53.199.9/add_comment/${postId}`, { comment: commentContent });
       console.log('Comment added:', response.data);
-      // Update comments data here if needed
       setComments([...comments, response.data]);
       setCommentContent('');
     } catch (error) {
