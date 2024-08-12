@@ -4,50 +4,54 @@ import { useNavigate } from "react-router-dom";
 import PropTypes from 'prop-types';
 import '../../styles/RegisterPage.css';
 
-const RegisterPage = ({ Error, setError }) => {
+const RegisterPage = ({ setError }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [comfirmPassword, setComfirmPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
   const [registerError, setRegisterError] = useState('');
 
-  const registerUser = () => {
-    if (!firstName || !lastName || !email || !password || !comfirmPassword) {
+  const registerUser = async () => {
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
       setRegisterError('Please fill in all fields.');
       setError('Please fill in all fields.');
       return;
     }
-    if (password !== comfirmPassword) {
+
+    if (password !== confirmPassword) {
       setRegisterError('Passwords do not match.');
       setError('Passwords do not match.');
       return;
     }
 
-    axios.post('https://13.53.199.9/signup', {
-      first_name: firstName,
-      last_name: lastName,
-      email: email,
-      password: password,
-      comfirm_password: comfirmPassword,
-    })
-    .then(function (response) {
-      console.log(response);
+    try {
+      await axios.post('https://13.53.199.9/signup', {
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        password: password,
+        comfirm_password: confirmPassword,
+      });
       setRegisterError('');
       setError('');
       navigate("/login");
-    })
-    .catch(function (error) {
-      console.log(error);
-      if (error.response && error.response.status === 401) {
-        setRegisterError("Invalid credentials");
-        setError("Invalid credentials");
+    } catch (error) {
+      console.error('Registration error:', error);
+      if (error.response) {
+        if (error.response.status === 409) { // Email already exists
+          setRegisterError("Email already exists");
+          setError("Email already exists");
+        } else {
+          setRegisterError("An unexpected error occurred");
+          setError("An unexpected error occurred");
+        }
       } else {
-        setRegisterError("Email already exists");
-        setError("Email already exists");
+        setRegisterError("Network error");
+        setError("Network error");
       }
-    });
+    }
   };
 
   return (
@@ -55,19 +59,44 @@ const RegisterPage = ({ Error, setError }) => {
       <div className="register-form">
         <h2>Create Your Account</h2>
         <div className="form-group">
-          <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First Name" />
+          <input
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="First Name"
+          />
         </div>
         <div className="form-group">
-          <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last Name" />
+          <input
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Last Name"
+          />
         </div>
         <div className="form-group">
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email Address"
+          />
         </div>
         <div className="form-group">
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+          />
         </div>
         <div className="form-group">
-          <input type="password" value={comfirmPassword} onChange={(e) => setComfirmPassword(e.target.value)} placeholder="Confirm Password" />
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirm Password"
+          />
         </div>
         <div className="form-group">
           <button className="btn-primary" onClick={registerUser}>Register Account</button>
@@ -84,7 +113,6 @@ const RegisterPage = ({ Error, setError }) => {
 }
 
 RegisterPage.propTypes = {
-  Error: PropTypes.string,
   setError: PropTypes.func.isRequired,
 };
 
