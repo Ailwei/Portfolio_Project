@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import PropTypes from 'prop-types';
 import '../../styles/RegisterPage.css';
 
-const RegisterPage = ({ setError }) => {
+const RegisterPage = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -15,14 +15,12 @@ const RegisterPage = ({ setError }) => {
 
   const registerUser = async () => {
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
-      setRegisterError('Please fill in all fields.');
-      setError('Please fill in all fields.');
+      setRegisterError('All fields are required.');
       return;
     }
 
     if (password !== confirmPassword) {
       setRegisterError('Passwords do not match.');
-      setError('Passwords do not match.');
       return;
     }
 
@@ -33,23 +31,24 @@ const RegisterPage = ({ setError }) => {
         email: email,
         password: password,
         comfirm_password: confirmPassword,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
       });
       setRegisterError('');
-      setError('');
       navigate("/login");
     } catch (error) {
       console.error('Registration error:', error);
       if (error.response) {
-        if (error.response.status === 409) { // Email already exists
+        if (error.response.status === 409) { 
           setRegisterError("Email already exists");
-          setError("Email already exists");
         } else {
           setRegisterError("An unexpected error occurred");
-          setError("An unexpected error occurred");
         }
       } else {
         setRegisterError("Network error");
-        setError("Network error");
       }
     }
   };
@@ -111,9 +110,4 @@ const RegisterPage = ({ setError }) => {
     </div>
   );
 }
-
-RegisterPage.propTypes = {
-  setError: PropTypes.func.isRequired,
-};
-
 export default RegisterPage;
