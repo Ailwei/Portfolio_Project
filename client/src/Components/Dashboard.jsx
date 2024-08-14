@@ -34,8 +34,11 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchUserId = async () => {
+      const token =  localStorage.getItem('authToken');
       try {
-        const response = await axios.get('http://13.53.199.9/get_user_id');
+        const response = await axios.get('http://13.53.199.9/get_user_id', {
+          headers: { Authorization: `Bearer ${token}`}
+        });
         setUserId(response.data.userId);
       } catch (error) {
         console.error('Error fetching userId:', error);
@@ -113,8 +116,11 @@ const Dashboard = () => {
   };
 
   const handleSearch = async () => {
+    const token =  localStorage.getItem('authToken');
     try {
-      const response = await axios.get(`http://13.53.199.9/search?query=${query}&category=${category}`);
+      const response = await axios.get(`http://13.53.199.9/search?query=${query}&category=${category}`,{
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setSearchResults(response.data);
       setShowSearchResults(true);
       console.log('Search results:', response.data);

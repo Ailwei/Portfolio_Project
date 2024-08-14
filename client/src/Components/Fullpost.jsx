@@ -14,10 +14,16 @@ const Fullpost = () => {
 
   useEffect(() => {
     const fetchPost = async () => {
+      const token = localStorage.getItem('authToken');
       try {
-        const response = await axios.get(`https://13.53.199.9/get_post/${postId}`);
+        const response = await axios.get(`https://13.53.199.9/get_post/${postId}`,{
+          headers: { Authorization: `Bearer ${token}` }
+        });
         setPost(response.data);
-        const commentsResponse = await axios.get(`https://13.53.199.9/get_comments/${postId}`);
+        const commentsResponse = await axios.get(`https://13.53.199.9/get_comments/${postId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+       });
         setComments(commentsResponse.data);
       } catch (error) {
         console.error('Error fetching post:', error);
@@ -28,8 +34,11 @@ const Fullpost = () => {
   }, [postId]);
 
   const handleLike = async () => {
+    const token = localStorage.getItem('authToken');
     try {
-      const response = await axios.post(`https//13.53.199.9/like/${postId}`);
+      const response = await axios.post(`https//13.53.199.9/like/${postId}`,{
+        headers: { Authorization: `Bearer ${token}` }
+      });
       console.log('Post liked:', response.data);
     
     } catch (error) {
@@ -38,8 +47,12 @@ const Fullpost = () => {
   };
 
   const handleComment = async () => {
+    const token = localStorage.getItem('authToken');
     try {
-      const response = await axios.post(`https://13.53.199.9/add_comment/${postId}`, { comment: commentContent });
+      const response = await axios.post(`https://13.53.199.9/add_comment/${postId}`,
+         { comment: commentContent },
+         { headers: { Authorization: `Bearer ${token}` } }
+        );
       console.log('Comment added:', response.data);
       setComments([...comments, response.data]);
       setCommentContent('');

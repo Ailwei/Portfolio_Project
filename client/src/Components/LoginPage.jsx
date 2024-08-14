@@ -34,7 +34,7 @@ const LoginPage = () => {
             setTimeout(() => {
                 localStorage.removeItem('authToken');
                 navigate('/login', { state: { sessionExpired: true } });
-            }, 30 * 10 * 1000); 
+            }, 30 * 60 * 1000); 
 
             navigate('/Dashboard');
          
