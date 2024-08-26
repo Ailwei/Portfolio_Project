@@ -971,17 +971,18 @@ def create_reactions():
         post_id = data.get('post_id')
         created_at = data.get('created_at')
         activity_type = data.get('activity_type', 0)
-        
+
         print('Received reaction data:', data)
 
         existing_reaction = Reaction.query.filter_by(post_id=post_id, user_id=current_user_id).first()
 
         if existing_reaction:
-            # If the reaction exists and activity_type is 1 (like), delete the existing reaction
-            if activity_type == 1:
+            if activity_type == 0:
                 db.session.delete(existing_reaction)
+            elif activity_type == 1:
+                existing_reaction.activity_type = 1
+                db.session.add(existing_reaction)
         else:
-            # If the reaction doesn't exist and activity_type is 1 (like), create a new Reaction object
             if activity_type == 1:
                 new_reaction = Reaction(
                     activity_type=1,
@@ -992,9 +993,16 @@ def create_reactions():
                 db.session.add(new_reaction)
 
         db.session.commit()
-        print('Reaction updated successfully') 
 
-        return jsonify({'message': 'Reaction updated successfully'})
+        likes_count = Reaction.query.filter_by(post_id=post_id, activity_type=1).count()
+        post = Post.query.get(post_id)
+        if post:
+            post.like_count = likes_count
+            db.session.commit()
+
+        print('Reaction updated successfully')
+
+        return jsonify({'message': 'Reaction updated successfully', 'likes_count': likes_count})
     except KeyError as e:
         error_message = 'Missing required field: {}'.format(e)
         logging.error(error_message)
@@ -1004,18 +1012,14 @@ def create_reactions():
         logging.error(error_message)
         return jsonify({'error': error_message}), 500
 
-
     
-# get reactions for post
 @app.route('/posts/<int:post_id>/reactions', methods=['GET'])
 def get_post_reactions(post_id):
     post = Post.query.get_or_404(post_id)
     reactions = Reaction.query.filter_by(post_id=post_id).all()
     
-    # Count the number of likes for this post
     likes_count = Reaction.query.filter_by(post_id=post_id, activity_type=1).count()
     
-    # Prepare response data
     response_data = {
         'reactions': [reaction.activity_type for reaction in reactions],
         'likes_count': likes_count
@@ -1024,8 +1028,6 @@ def get_post_reactions(post_id):
     
     return jsonify(response_data)
 
-import base64
-
 @app.route('/get_friends', methods=['GET'])
 @jwt_required()
 def get_current_user_friends():
@@ -1033,7 +1035,7 @@ def get_current_user_friends():
         current_user_id = get_jwt_identity()
         logging.info(f'Current user ID from JWT: {current_user_id}')
         
-        friend_type = request.args.get('type')  # Retrieve the type of friends to fetch: followers or following
+        friend_type = request.args.get('type') 
 
         current_user = User.query.get(current_user_id)
         if current_user:
