@@ -42,7 +42,7 @@ function App() {
                 <Route path="/groups" element={<GroupPages authToken={authToken} />} />
                 <Route path="/userprofile" element={<ViewProfile authToken={authToken} />} />
                 <Route path="/viewUserProfile/:userId" element={<ViewUserProfile authToken={authToken} />} />
-                <Route path="/Fullpost/:postId" element={<Fullpost />} />
+               <Route path="/Fullpost/:postId" element={<Fullpost />} />
                 <Route path="/menu" element={<Menu authToken={authToken} />} />
                 <Route path="/get_group/:groupId" element={<ViewGroup />} />
                 <Route path="/joined_groups/:groupId" element={<ViewGroup />} />

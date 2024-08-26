@@ -40,8 +40,13 @@ const ViewPosts = ({setSelectedPost}) => {
   }, []);
 
   const fetchPosts = async () => {
+    const token = localStorage.getItem('authToken')
     try {
-      const response = await axios.get(`http://127.0.0.1:5000/get_posts?page=${currentPage}`);
+      const response = await axios.get(`http://127.0.0.1:5000/get_posts?page=${currentPage}`,{
+        headers: {
+         Authorization: `Bearer ${token}`
+        }
+      });
       let fetchedPosts = response.data.posts;
 
       fetchedPosts = fetchedPosts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -86,6 +91,10 @@ const ViewPosts = ({setSelectedPost}) => {
  
 
   const handleComment = async (postId) => {
+    if(!commentContent.trim()) {
+      alert('Comment cannnot be empty');
+      return;
+    }
     try {
       const response = await axios.post(`http://127.0.0.1:5000/add_comment/${postId}`, { comment: commentContent }, {
         headers: {
@@ -94,6 +103,7 @@ const ViewPosts = ({setSelectedPost}) => {
       });
       console.log('Comment added:', response.data);
       setCommentContent('');
+      setCommentingPostId(null);
       fetchPosts();
     } catch (error) {
       console.error('Error adding comment:', error);
@@ -155,35 +165,55 @@ const ViewPosts = ({setSelectedPost}) => {
   const fetchReactions = async (postIds) => {
     try {
       const reactionsResponse = await Promise.all(postIds.map(postId =>
-        axios.get(`http://127.0.0.1:5000/posts/${postId}/reactions`)
+        axios.get(`http://127.0.0.1:5000/posts/${postId}/reactions`, {
+          headers: { Authorization: `Bearer ${authToken}` }
+        })
       ));
       const reactionsData = reactionsResponse.reduce((acc, response, index) => {
         acc[postIds[index]] = response.data;
         return acc;
       }, {});
   
-      console.log('Fetched reactions data:', reactionsData);
-  
-    
-      const updatedLikesCountPerPost = Object.keys(reactionsData).reduce((acc, postId) => {
+      const updatedLikesCountPerPost = {};
+      const updatedLikedPosts = {};
+      Object.keys(reactionsData).forEach(postId => {
         const postReactions = reactionsData[postId];
-        const likesCount = postReactions.filter(reaction => reaction.activity_type === 1).length;
-        acc[postId] = likesCount;
-        return acc;
-      }, {});
+        const likesCount = postReactions.likes_count;
+        updatedLikesCountPerPost[postId] = likesCount;
   
-      console.log('Updated likes count per post:', updatedLikesCountPerPost);
-
+        const hasLiked = postReactions.reactions.includes(1);
+        updatedLikedPosts[postId] = { clicked: hasLiked };
+      });
+  
       setLikesCountPerPost(updatedLikesCountPerPost);
+      setLikedPosts(updatedLikedPosts);
+      await fetchPosts();
     } catch (error) {
       console.error('Error fetching reactions:', error);
     }
   };
-  const handleReaction = async (postId) => {
-    try {
-      const isLiked = !likedPosts[postId]?.clicked;
-      console.log('isLiked:', isLiked);
   
+  
+  const handleReaction = async (postId) => {
+  
+    const isLiked = !likedPosts[postId]?.clicked;
+    
+    const updatedPosts = posts.map(post => {
+      if (post.id === postId) {
+        const updatedLikesCount = isLiked ? post.likes_count + 1 : post.likes_count - 1;
+        return { ...post, likes_count: updatedLikesCount };
+      }
+      return post;
+    });
+    
+    setPosts(updatedPosts);
+  
+    setLikedPosts(prevState => ({
+      ...prevState,
+      [postId]: { clicked: isLiked }
+    }));
+  
+    try {
       await axios.post(`http://127.0.0.1:5000/reactions`,  
         {
           user_id: currentUserId,
@@ -198,18 +228,26 @@ const ViewPosts = ({setSelectedPost}) => {
           }
         }
       );
-  
-   
-      setLikedPosts(prevLikedPosts => ({
-        ...prevLikedPosts,
-        [postId]: { clicked: isLiked }
-      }));
-  
-      fetchReactions([postId]);
     } catch (error) {
       console.error('Error creating reaction:', error);
+      
+      const revertedPosts = posts.map(post => {
+        if (post.id === postId) {
+          const revertedLikesCount = isLiked ? post.likes_count - 1 : post.likes_count + 1;
+          return { ...post, likes_count: revertedLikesCount };
+        }
+        return post;
+      });
+      
+      setPosts(revertedPosts);
+  
+      setLikedPosts(prevState => ({
+        ...prevState,
+        [postId]: { clicked: !isLiked }
+      }));
     }
   };
+  
   
   return (
     <div className="view-posts-container">
@@ -256,14 +294,15 @@ const ViewPosts = ({setSelectedPost}) => {
                 )}
               </div>
               <div className="post-actions">
-                 <button
-                  onClick={() => handleReaction(post.id)}
-                  className="reaction-button"
-                  style={{ color: likedPosts[post.id] && likedPosts[post.id].clicked ? 'red' : 'black' }}
-                >
-                  {likedPosts[post.id] && likedPosts[post.id].clicked ? <FaHeart /> : <FaRegHeart />}
-                  <span>{likesCountPerPost[post.id] || 0}</span>
-                </button>
+              <button
+  onClick={() => handleReaction(post.id)}
+  className="reaction-button"
+  style={{ color: likedPosts[post.id]?.clicked ? 'red' : 'black' }}
+>
+  {likedPosts[post.id]?.clicked ? <FaHeart /> : <FaRegHeart />}
+  <span>{likesCountPerPost[post.id] || 0}</span>
+</button>
+
                 <FaComment onClick={() => toggleCommentBox(post.id)} className="comment-icon" />
                 {commentingPostId === post.id && (
                   <div className="comment-box">

@@ -16,6 +16,8 @@ import GetJoinedGroupsWidget from './getGroupJoined';
 import ViewGroup from './ViewGroup';
 import FriendsList from './FriendList';
 import MessageList from './MessageList';
+import ViewPosts from './ViewPostPage';
+import Fullpost from './Fullpost';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -30,6 +32,7 @@ const Dashboard = () => {
   const [userId, setUserId] = useState(null);
   const [showViewGroups, setShowViewGroups] = useState(false);
   const [showGroupDetails, setShowGroupDetails] = useState(false);
+  const [showFullpost, setFullPost] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
 
   useEffect(() => {
@@ -65,6 +68,18 @@ const Dashboard = () => {
       setShowSidebar(true);
     }
   };
+  const toggleViewFullPost = (postId) => {
+    setShowViewGroups(!showViewGroups);
+    setShowMessages(false);
+    setShowCreatePostPage(false);
+    setShowSearchResults(false);
+    setShowGroupDetails(false);
+    setFullPost(false);
+    if (!showSidebar) {
+      setShowSidebar(true);
+    }
+    navigate(`/dashboard/fullpost/${postId}`);
+  };
 
   const toggleCreatePostPage = () => {
     setShowCreatePostPage(!showCreatePostPage);
@@ -73,10 +88,12 @@ const Dashboard = () => {
     setShowSearchResults(false);
     setShowViewGroups(false);
     setShowGroupDetails(false);
+    setFullPost(false);
     if (!showSidebar) {
       setShowSidebar(true);
     }
   };
+
 
   const toggleCreateGroupForm = () => {
     setShowCreateGroupForm(!showCreateGroupForm);
@@ -85,6 +102,7 @@ const Dashboard = () => {
     setShowSearchResults(false);
     setShowViewGroups(false);
     setShowGroupDetails(false);
+    setFullPost(false);
     if (!showSidebar) {
       setShowSidebar(true);
     }
@@ -96,6 +114,7 @@ const Dashboard = () => {
     setShowCreatePostPage(false);
     setShowSearchResults(false);
     setShowGroupDetails(false);
+    setFullPost(false);
     if (!showSidebar) {
       setShowSidebar(true);
     }
@@ -107,6 +126,7 @@ const Dashboard = () => {
     setShowCreatePostPage(false);
     setShowSearchResults(false);
     setShowViewGroups(false);
+    setFullPost(false);
     if (!showSidebar) {
       setShowSidebar(true);
     }
@@ -198,6 +218,7 @@ const Dashboard = () => {
           {showCreatePostPage && <CreatePostPage toggleCreatePostPage={toggleCreatePostPage} />}
           {showViewGroups && <GroupsComponent />}
           {showGroupDetails && <ViewGroup />}
+          {showFullpost && <Fullpost toggleViewFullPost={toggleViewFullPost}/>}
           {showSearchResults && (
             <div>
               {(!searchResults || Object.keys(searchResults).length === 0) && (

@@ -11,13 +11,26 @@ const Fullpost = () => {
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
   const [commentContent, setCommentContent] = useState('');
+  const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
+      const token = localStorage.getItem('authToken');
+      
       try {
-        const response = await axios.get(`http://127.0.0.1:5000/get_post/${postId}`);
+        const response = await axios.get(`http://127.0.0.1:5000/get_post/${postId}`,
+          {
+            headers: {
+            Authorization: `Bearer ${token}`
+          }
+      });
         setPost(response.data);
-        const commentsResponse = await axios.get(`http://127.0.0.1:5000/get_comments/${postId}`);
+        setIsLiked(response.data.liked);
+        const commentsResponse = await axios.get(`http://127.0.0.1:5000/get_comments/${postId}`,{
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         setComments(commentsResponse.data);
       } catch (error) {
         console.error('Error fetching post:', error);
@@ -28,20 +41,35 @@ const Fullpost = () => {
   }, [postId]);
 
   const handleLike = async () => {
+    const token = localStorage.getItem('authToken');
     try {
-      const response = await axios.post(`http://127.0.0.1:5000/like/${postId}`);
+      const newLikedState = !isLiked;
+      const response = await axios.post(`http://127.0.0.1:5000/like/${postId}`, {liked: newLikedState},{
+        headers: {
+          Authorization: `bearer ${token}`}
+        });
+        setIsLiked(newLikedState);
       console.log('Post liked:', response.data);
-      // You may want to update the post data here if needed
+      
     } catch (error) {
       console.error('Error liking post:', error);
     }
   };
 
   const handleComment = async () => {
+    const token = localStorage.getItem('authToken');
+    if(!commentContent.trim){
+      alert("Comment can not be empty!")
+      return;
+    }
     try {
-      const response = await axios.post(`http://127.0.0.1:5000/add_comment/${postId}`, { comment: commentContent });
+      const response = await axios.post(`http://127.0.0.1:5000/add_comment/${postId}`, { comment: commentContent },{
+        headers: {
+          Authorization: `bearer ${token}`
+
+        }
+      });
       console.log('Comment added:', response.data);
-      // Update comments data here if needed
       setComments([...comments, response.data]);
       setCommentContent('');
     } catch (error) {
