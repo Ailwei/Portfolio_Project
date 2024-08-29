@@ -19,7 +19,7 @@ const ViewPosts = ({setSelectedPost}) => {
   const [reactions, setReactions] = useState({});
   const [likedPosts, setLikedPosts] = useState({});
   const [likesCountPerPost, setLikesCountPerPost] = useState({});
-  
+ 
 
   const navigate = useNavigate();
 
@@ -117,6 +117,7 @@ const ViewPosts = ({setSelectedPost}) => {
         }
       });
       const followedUsers = response.data.followed_users;
+      console.log('Fetched followed users:', followedUsers); 
       setFollowedUsers(followedUsers);
       localStorage.setItem('followedUsers', JSON.stringify(followedUsers));
     } catch (error) {
@@ -125,38 +126,43 @@ const ViewPosts = ({setSelectedPost}) => {
   };
 
   const handleFollow = async (userId) => {
-    if (userId) {
+    console.log('Current followedUsers:', followedUsers);
+    console.log('User ID to toggle:', userId);
+  
+    try {
       if (followedUsers.includes(userId)) {
+        // Unfollow
         await axios.post(`http://localhost:5000/unfollow/${userId}`, {}, {
-          headers: {
-            Authorization: `Bearer ${authToken}`
-          }
+          headers: { Authorization: `Bearer ${authToken}` }
         });
+  
+        // Create a new array excluding the userId to unfollow
         const updatedFollowedUsers = followedUsers.filter(id => id !== userId);
         setFollowedUsers(updatedFollowedUsers);
         localStorage.setItem('followedUsers', JSON.stringify(updatedFollowedUsers));
       } else {
+        // Follow
         await axios.post(`http://localhost:5000/follow/${userId}`, {}, {
-          headers: {
-            Authorization: `Bearer ${authToken}`
-          }
+          headers: { Authorization: `Bearer ${authToken}` }
         });
+  
+        // Create a new array including the userId to follow
         const updatedFollowedUsers = [...followedUsers, userId];
         setFollowedUsers(updatedFollowedUsers);
         localStorage.setItem('followedUsers', JSON.stringify(updatedFollowedUsers));
       }
-    } else {
-      console.error('Invalid user ID to follow/unfollow');
+    } catch (error) {
+      console.error('Error following/unfollowing user:', error);
     }
   };
-
+  
   const toggleCommentBox = (postId) => {
     setCommentingPostId(commentingPostId === postId ? null : postId);
   };
   const handlePostClick = async (postId) => {
     navigate(`/Fullpost/${postId}`);
     try {
-      const response = await axios.get(`http://127.0.0.1:5000/get_post/${postId}`);
+      const response = await axios.get(`http://localhost:5000/get_post/${postId}`);
       setSelectedPost(response.data);
     } catch (error) {
       console.error('Error fetching post:', error);
@@ -165,7 +171,7 @@ const ViewPosts = ({setSelectedPost}) => {
   const fetchReactions = async (postIds) => {
     try {
       const reactionsResponse = await Promise.all(postIds.map(postId =>
-        axios.get(`http://127.0.0.1:5000/posts/${postId}/reactions`, {
+        axios.get(`http://localhost:5000/posts/${postId}/reactions`, {
           headers: { Authorization: `Bearer ${authToken}` }
         })
       ));
@@ -192,62 +198,79 @@ const ViewPosts = ({setSelectedPost}) => {
       console.error('Error fetching reactions:', error);
     }
   };
-  
-  
   const handleReaction = async (postId) => {
-  
-    const isLiked = !likedPosts[postId]?.clicked;
-    
+    const isCurrentlyLiked = likedPosts[postId]?.clicked || false;
+    const newActivityType = isCurrentlyLiked ? 1 : 0;
+
     const updatedPosts = posts.map(post => {
       if (post.id === postId) {
-        const updatedLikesCount = isLiked ? post.likes_count + 1 : post.likes_count - 1;
+        const updatedLikesCount = newActivityType === 1
+          ? post.likes_count + 1
+          : post.likes_count - 1;
         return { ...post, likes_count: updatedLikesCount };
       }
       return post;
     });
-    
     setPosts(updatedPosts);
-  
+
     setLikedPosts(prevState => ({
       ...prevState,
-      [postId]: { clicked: isLiked }
+      [postId]: { clicked: !isCurrentlyLiked }
     }));
-  
+
     try {
-      await axios.post(`http://127.0.0.1:5000/reactions`,  
-        {
-          user_id: currentUserId,
-          post_id: postId,
-          created_at: new Date().toISOString(),
-          activity_type: isLiked ? 1 : 0
-        }, 
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            'Content-Type': 'application/json'
-          }
+      await axios.post(`http://localhost:5000/reactions`, {
+        post_id: postId,
+        created_at: new Date().toISOString(),
+        activity_type: newActivityType
+      }, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
+      const response = await axios.get(`http://localhost:5000/get_posts/${postId}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`
         }
-      );
+      });
+
+      const updatedPost = response.data;
+
+      setPosts(prevPosts => prevPosts.map(post =>
+        post.id === postId ? updatedPost : post
+      ));
+
     } catch (error) {
       console.error('Error creating reaction:', error);
       
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
+      } else {
+        console.error('Error message:', error.message);
+      }
+
       const revertedPosts = posts.map(post => {
         if (post.id === postId) {
-          const revertedLikesCount = isLiked ? post.likes_count - 1 : post.likes_count + 1;
+          const revertedLikesCount = newActivityType === 1
+            ? post.likes_count - 1
+            : post.likes_count + 1;
           return { ...post, likes_count: revertedLikesCount };
         }
         return post;
       });
-      
+
       setPosts(revertedPosts);
-  
+
       setLikedPosts(prevState => ({
         ...prevState,
-        [postId]: { clicked: !isLiked }
+        [postId]: { clicked: isCurrentlyLiked }
       }));
     }
   };
-  
   
   return (
     <div className="view-posts-container">
@@ -319,8 +342,9 @@ const ViewPosts = ({setSelectedPost}) => {
                   </div>
                 )}
                 <button onClick={() => handleFollow(post.user_id)} className="follow-button">
-                  {followedUsers.includes(post.user_id) ? <FaUserMinus /> : <FaUserPlus />}
-                </button>
+    {followedUsers.includes(post.user_id) ? <FaUserMinus /> : <FaUserPlus />}
+</button>
+
               </div>
               <div className="post-comments-summary">
                 <span onClick={() => handlePostClick(post.id)} className="expand-comments">
