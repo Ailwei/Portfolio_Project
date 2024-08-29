@@ -32,6 +32,7 @@ SQLALCHEMY_ECHO = True
   
 bcrypt = Bcrypt(app) 
 CORS(app, supports_credentials=True)
+#CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}}, supports_credentials=True)
 db.init_app(app)
   
 with app.app_context():
@@ -959,74 +960,82 @@ def search():
         return jsonify({'error': 'Invalid category'}), 400
 
     return jsonify(data)
-# create new reaction
 
 @app.route('/reactions', methods=['POST'])
 @jwt_required()
 def create_reactions():
+    data = request.json
+    current_user_id = get_jwt_identity()
+
+    post_id = data.get('post_id')
+    created_at = data.get('created_at')
+    activity_type = data.get('activity_type')
+
+    app.logger.debug(f'Received data: {data}')
+    
+    if not post_id or created_at is None or activity_type not in [0, 1]:
+        app.logger.error(f'Bad Request: Invalid data. Data: {data}')
+        return jsonify({'error': 'Invalid data'}), 400
+
     try:
-        data = request.json
-        current_user_id = get_jwt_identity()
+        created_at = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%fZ")
+    except ValueError:
+        app.logger.error(f'Bad Request: Invalid date format. Data: {data}')
+        return jsonify({'error': 'Invalid date format'}), 400
 
-        post_id = data.get('post_id')
-        created_at = data.get('created_at')
-        activity_type = data.get('activity_type', 0)
+    post = Post.query.get(post_id)
+    if not post:
+        app.logger.error(f'Bad Request: post_id not found. Data: {data}')
+        return jsonify({'error': 'Post not found'}), 404
 
-        print('Received reaction data:', data)
+    existing_reaction = Reaction.query.filter_by(post_id=post_id, user_id=current_user_id).first()
 
-        existing_reaction = Reaction.query.filter_by(post_id=post_id, user_id=current_user_id).first()
-
+    if activity_type == 1:
         if existing_reaction:
-            if activity_type == 0:
-                db.session.delete(existing_reaction)
-            elif activity_type == 1:
+            if existing_reaction.activity_type != 1:
                 existing_reaction.activity_type = 1
-                db.session.add(existing_reaction)
         else:
-            if activity_type == 1:
-                new_reaction = Reaction(
-                    activity_type=1,
-                    user_id=current_user_id,
-                    post_id=post_id,
-                    created_at=datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%fZ")
-                )
-                db.session.add(new_reaction)
+            new_reaction = Reaction(
+                activity_type=0,
+                user_id=current_user_id,
+                post_id=post_id,
+                created_at=created_at
+            )
+            db.session.add(new_reaction)
+    elif activity_type == 1:
+        if existing_reaction:
+            db.session.delete(existing_reaction)
 
-        db.session.commit()
+    db.session.commit()
+
+    # Update like count
+    likes_count = Reaction.query.filter_by(post_id=post_id, activity_type=1).count()
+    post.like_count = likes_count
+    db.session.commit()
+
+    return jsonify({'message': 'Reaction updated successfully', 'likes_count': likes_count}), 200
+
+@app.route('/posts/<int:post_id>/reactions', methods=['GET'])
+@jwt_required()
+def get_post_reactions(post_id):
+    try:
+        post = Post.query.get_or_404(post_id)
+        reactions = Reaction.query.filter_by(post_id=post_id).all()
 
         likes_count = Reaction.query.filter_by(post_id=post_id, activity_type=1).count()
-        post = Post.query.get(post_id)
-        if post:
-            post.like_count = likes_count
-            db.session.commit()
 
-        print('Reaction updated successfully')
+        response_data = {
+            'reactions': [reaction.activity_type for reaction in reactions],
+            'likes_count': likes_count
+        }
 
-        return jsonify({'message': 'Reaction updated successfully', 'likes_count': likes_count})
-    except KeyError as e:
-        error_message = 'Missing required field: {}'.format(e)
-        logging.error(error_message)
-        return jsonify({'error': error_message}), 400
+        return jsonify(response_data), 200
+
     except Exception as e:
-        error_message = 'Internal server error: {}'.format(e)
-        logging.error(error_message)
+        error_message = f'Internal server error: {e}'
+        app.logger.error(error_message)
         return jsonify({'error': error_message}), 500
 
-    
-@app.route('/posts/<int:post_id>/reactions', methods=['GET'])
-def get_post_reactions(post_id):
-    post = Post.query.get_or_404(post_id)
-    reactions = Reaction.query.filter_by(post_id=post_id).all()
-    
-    likes_count = Reaction.query.filter_by(post_id=post_id, activity_type=1).count()
-    
-    response_data = {
-        'reactions': [reaction.activity_type for reaction in reactions],
-        'likes_count': likes_count
-    }
-    print(f'Likes count for post {post_id}: {likes_count}')
-    
-    return jsonify(response_data)
 
 @app.route('/get_friends', methods=['GET'])
 @jwt_required()

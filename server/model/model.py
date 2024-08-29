@@ -120,8 +120,8 @@ class Reaction(db.Model):
     created_at = db.Column(db.DateTime, nullable=False)
     activity_type = db.Column(db.Integer, nullable=False)
     
-    user_id = db.Column(db.Integer, ForeignKey('user.user_id'))
-    post_id = db.Column(db.Integer, ForeignKey('post.post_id'))
+    user_id = db.Column(db.Integer, ForeignKey('user.user_id'), nullable=False)
+    post_id = db.Column(db.Integer, ForeignKey('post.post_id'), nullable=False)
     #comment_id = db.Column(db.Integer, ForeignKey('comments.comment_id'))
     #group_id = db.Column(db.Integer, ForeignKey('group.group_id'))
     
