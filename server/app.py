@@ -20,6 +20,8 @@ load_dotenv()
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['JWT_SECRET_KEY'] = 'rT30uDfAqHbF'
+app.config['JWT_VERIFY_SUB'] = False
+
 jwt = JWTManager(app)
 
 logging.basicConfig(level=logging.DEBUG)
