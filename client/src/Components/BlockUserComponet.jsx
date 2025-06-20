@@ -22,7 +22,7 @@ const BlockUserComponent = ({ authToken }) => {
         try {
             let response;
             if (action === 'block') {
-                response = await axios.post('127.0.0.1/block-user', { user_id: userId }, {
+                response = await axios.post('http://127.0.0.1:5000/block-user', { user_id: userId }, {
                     headers: {
                         Authorization: `Bearer ${authToken}`
                     }

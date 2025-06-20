@@ -17,7 +17,7 @@ const ViewProfile = ({ userId }) => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get('https://13.53.199.9/view_current_user_profile', {
+        const response = await axios.get('http://localhost:5000/view_current_user_profile', {
           headers: {
             Authorization: `Bearer ${authToken}`
           }

@@ -31,7 +31,7 @@ const CreateGroupForm = (toggleCreateGroupForm) => {
 
     try {
       const response = await axios.post(
-        'https://13.53.199.9/create_group',
+        'http://127.0.0.1:5000/create_group',
         {
           group: groupData.group,
           description: groupData.description,

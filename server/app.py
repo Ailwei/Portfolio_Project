@@ -196,6 +196,10 @@ def get_or_update_profile():
             return jsonify({'error': str(e)}), 500
 
         
+def is_valid_group(group_id):
+    """Check if a group with the given group_id exists."""
+    return Group.query.get(group_id) is not None
+
 @app.route('/create_post', methods=['POST'])
 @jwt_required()
 def create_post():
@@ -517,15 +521,17 @@ def view_members(group_id):
     current_user = get_jwt_identity()
     
     # Check if the group exists
-    if group_id not in groups:
+    group = Group.query.get(group_id)
+    if not group:
         return jsonify(message='Group not found'), 404
 
     # Check if the current user is a member of the group
-    if group_id not in user_groups.get(current_user, []):
+    membership = Membership.query.filter_by(user_id=current_user, group_id=group_id).first()
+    if not membership:
         return jsonify(message='You are not a member of this group'), 403
 
     # Retrieve members of the group
-    group_members = groups[group_id]
+    group_members = group[group_id]
     return jsonify(group_id=group_id, members=group_members), 200
     
     

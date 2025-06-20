@@ -21,7 +21,7 @@ const GroupsComponent = ({ currentUser }) => {
 
     const fetchGroups = async () => {
         try {
-            const response = await axios.get('https://13.53.199.9/groups', {
+            const response = await axios.get('http://127.0.0.1:5000/groups', {
                 headers: {
                     Authoriation: `Bearer ${token}`
                 }

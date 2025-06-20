@@ -13,7 +13,7 @@ function SearchBar() {
   const handleSearch = async () => {
     try {
       console.log('Selected category:', category); 
-      const response = await axios.get(`https://13.53.199.9/search?query=${query}&category=${category}`);
+      const response = await axios.get(`http://127.0.0.1:5000/search?query=${query}&category=${category}`);
       setResults(response.data);
     } catch (error) {
       console.error('Error searching:', error);

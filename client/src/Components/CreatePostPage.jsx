@@ -39,10 +39,9 @@ function CreatePost() {
       formData.append('content', content);
       formData.append('post_thumbnail', post_thumbnail);
 
-      const response = await axios.post('https://13.53.199.9/create_post', formData, {
+      const response = await axios.post('http://127.0.0.1:5000/create_post', formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
         }
       });
 

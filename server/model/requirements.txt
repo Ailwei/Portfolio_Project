@@ -1,0 +1,12 @@
+flask
+sqlalchemy
+requests
+flask
+flask-bcrypt
+flask-cors
+flask-jwt-extended
+werkzeug
+python-dotenv
+sqlalchemy
+sqlalchemy-utils
+requests

@@ -37,7 +37,7 @@ const Dashboard = () => {
     const fetchUserId = async () => {
       const token =  localStorage.getItem('authToken');
       try {
-        const response = await axios.get('https://13.53.199.9/get_user_id', {
+        const response = await axios.get('http://127.0.0.1:5000/get_user_id', {
           headers: { Authorization: `Bearer ${token}`}
         });
         setUserId(response.data.userId);

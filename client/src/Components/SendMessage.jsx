@@ -22,7 +22,7 @@ const SendMessage = ({ userId }) => {
       }
 
       await axios.post(
-        `https://13.53.199.9/send_messages/${userId}`,
+        `http://127.0.0.1:5000/send_messages/${userId}`,
         { content: newMessage },
         {
           headers: {

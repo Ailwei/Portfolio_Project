@@ -16,7 +16,7 @@ const GetPostWidget = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get('https://13.53.199.9/get_posts');
+      const response = await axios.get('http://127.0.0.1:5000/get_posts');
       const latestPosts = response.data.posts.slice(0, 10);
       setPosts(latestPosts);
     } catch (error) {
