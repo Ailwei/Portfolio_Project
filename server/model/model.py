@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, Integer, VARCHAR, Text, BLOB, Sequence, ForeignKey, DateTime, func, or_
+from sqlalchemy import Column, Integer, VARCHAR, Text, LONGBLOB, Sequence, ForeignKey, DateTime, func, or_, LargeBinary
 from sqlalchemy.orm import relationship
 from sqlalchemy.exc import IntegrityError
 
@@ -44,7 +44,7 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, ForeignKey('user.user_id'))
     group_id = db.Column(db.Integer, ForeignKey('group.group_id'), nullable=True)
-    post_thumbnail = Column(BLOB)
+    post_thumbnail = Column(db.LONGBLOB, nullable=True)
     created_at = db.Column(db.DateTime, default=func.now())
     mimetype = db.Column(db.Text, nullable=False)
     
