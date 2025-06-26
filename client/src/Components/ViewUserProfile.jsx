@@ -3,7 +3,6 @@ import axios from 'axios';
 import { FaUserPlus, FaEnvelope,FaUserMinus, FaBan, FaCheckCircle } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
 import defaultProfileImage from './images/profile_default.png';
-import '../../styles/ViewUserProfile.css';
 
 
 const ViewUserProfile = () => {

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { FaPlus, FaUserPlus, FaSignOutAlt, FaTrash } from 'react-icons/fa';
-import '../../styles/GroupPages.css'
 
 const GroupPages = () => {
   const [groupData, setGroupData] = useState({

@@ -4,7 +4,7 @@ import { FaHeart,FaUserMinus, FaRegHeart, FaComment, FaUserPlus } from 'react-ic
 import defaultProfileImage from './images/profile_default.png';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import ViewProfile from './ViewProfile'
-import '../../styles/ViewPosts.css';
+
 
 const ViewPosts = ({setSelectedPost}) => {
   const [posts, setPosts] = useState([]);

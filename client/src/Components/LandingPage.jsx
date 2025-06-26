@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import '../../styles/LandingPage.css'
 
 import communityImage from './images/community.jpg';
 import loginimage from './images/login.png'

@@ -3,7 +3,6 @@ import axios from 'axios';
 import { FaHeart, FaRegHeart, FaComment } from 'react-icons/fa';
 import defaultProfileImage from './images/profile_default.png';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import '../../styles/Fullpost.css'
 
 const Fullpost = () => {
   const { postId } = useParams();
