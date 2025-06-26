@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, Integer, VARCHAR, Text, LONGBLOB, Sequence, ForeignKey, DateTime, func, or_, LargeBinary
+from sqlalchemy import Column, Integer, VARCHAR, Text, LargeBinary, Sequence, ForeignKey, DateTime, func, or_, LargeBinary
 from sqlalchemy.orm import relationship
 from sqlalchemy.exc import IntegrityError
 
@@ -14,8 +14,7 @@ class User(db.Model):
     last_name = db.Column(db.VARCHAR(50), nullable=False)
     email = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.VARCHAR(50), nullable=False)
-    comfirm_password = db.Column(db.VARCHAR(50), nullable=False)
-    profile_picture = db.Column(db.BLOB, nullable=True)
+    profile_picture = db.Column(db.LargeBinary, nullable=True)
     mimetype =db.Column(db.TEXT, nullable=True)
     
     comments = db.relationship('Comments', back_populates="user")
@@ -44,7 +43,7 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, ForeignKey('user.user_id'))
     group_id = db.Column(db.Integer, ForeignKey('group.group_id'), nullable=True)
-    post_thumbnail = Column(db.LONGBLOB, nullable=True)
+    post_thumbnail = db.Column(db.LargeBinary, nullable=True)
     created_at = db.Column(db.DateTime, default=func.now())
     mimetype = db.Column(db.Text, nullable=False)
     
