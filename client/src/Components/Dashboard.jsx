@@ -13,9 +13,12 @@ import GetJoinedGroupsWidget from './getGroupJoined';
 import ViewGroup from './ViewGroup';
 import FriendsList from './FriendList';
 import MessageList from './MessageList';
+import { AppBar, Box, Button, Typography, Toolbar, TextField } from '@mui/material';
+import CreatePost from './CreatePostPage';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [isLogin,setIsLogin] = useState();
   const [showSidebar, setShowSidebar] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
   const [showCreatePostPage, setShowCreatePostPage] = useState(false);
@@ -33,6 +36,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUserId = async () => {
       const token =  localStorage.getItem('authToken');
+      console.log(token)
       try {
         const response = await axios.get('http://127.0.0.1:5000/get_user_id', {
           headers: { Authorization: `Bearer ${token}`}
@@ -47,7 +51,8 @@ const Dashboard = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
+   const token =  localStorage.removeItem('authToken');
+   console.log(token, "is reoved")
     navigate('/');
   };
 
@@ -161,110 +166,59 @@ const Dashboard = () => {
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (!token) {
+      localStorage.removeItem('authToken')
       navigate('/Login');
     }
   }, [navigate]);
 
   return (
-    <div className="dashboard">
-      <header className="header">
-        <nav>
-          <Link to="../Dashboard">
-            <h1 onClick={handleClick}>CommHub</h1>
-          </Link>
-          <Link to="#" className="menu-link" onClick={toggleViewGroups}>View Group</Link>
-          <Link to="#" className="menu-link" onClick={toggleCreatePostPage}>Create Post</Link>
-          <Link to="#" className="menu-link" onClick={toggleCreateGroupForm}>Create Group</Link>
-          <Link to="#" className="menu-link" onClick={toggleMessages}>Messages</Link>
-          <div className="search-container">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Enter your search query"
-              className="search-input"
-            />
-            <select onChange={(e) => setCategory(e.target.value)}>
-              <option value="">Select a Search Category</option>
-              <option value="all">All</option>
-              <option value="users">Users</option>
-              <option value="groups">Groups</option>
-              <option value="posts">Posts</option>
-            </select>
-            <button onClick={handleSearch} className="search-button">Search</button>
-          </div>
-          <div className="envelope-container">
-            <i className="fas fa-envelope"></i>
-          </div>
-          <div className="user-info">
-            <button className="logout-button" onClick={handleLogout}>Logout</button>
-          </div>
-          <Menu />
-          <GetFullName userId={userId} />
-        </nav>
-      </header>
-      <main className="main-container">
-        <div className="main-content">
-          {!showMessages && !showCreateGroupForm && !showCreatePostPage && !showSearchResults && !showViewGroups && !showGroupDetails && <ViewPostPage />}
-          {showMessages && (
-            <div className="messages-container">
-              <h2>Messages</h2>
-              <MessageList userId={userId} />
-            </div>
+<Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+      <AppBar position="sticky" sx={{ backgroundColor: '#1976d2' }}>
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            CommHub
+          </Typography>
+          {isLogin === 0 ? (
+            <>
+          <Button component={Link} to="/login" color="inherit">Login</Button>
+          <Button component={Link} to="/register" color="inherit">Register</Button>
+          <Button component={Link} to="/aboutus" color="inherit">About Us</Button>
+          <Menu/>
+</>
+          ):(
+          <>
+          <Button onClick={toggleCreatePostPage}  color='inherit'>Create Post</Button>
+          <Button onClick={handleLogout} color="inherit">Logout</Button>
+          </>
+          
           )}
-          {showCreateGroupForm && <CreateGroupForm />}
-          {showCreatePostPage && <CreatePostPage toggleCreatePostPage={toggleCreatePostPage} />}
-          {showViewGroups && <GroupsComponent />}
-          {showGroupDetails && <ViewGroup />}
-          {showFullPosts && <ViewPostPage  toogleViewFullPosts={toogleViewFullPosts}/>}
-          {showSearchResults && (
-            <div>
-              {(!searchResults || Object.keys(searchResults).length === 0) && (
-                <p>No matching results found for {category || 'all categories'}.</p>
-              )}
-              <div className="search-results">
-                {Object.keys(searchResults).map((category) => (
-                  <div key={category} className="search-results-category">
-                    <h2>{category}</h2>
-                    <ul>
-                      {searchResults[category]?.map((item) => (
-                        <li key={item?.id}>
-                          {category === 'users' && (
-                            <Link to={`/user/${item?.user_id}`}>
-                              {item?.full_name}
-                            </Link>
-                          )}
-                          {category === 'groups' && (
-                            <Link to={`/group/${item?.id}`}>
-                              {item?.group_name}
-                            </Link>
-                          )}
-                          {category === 'posts' && (
-                            <Link to={`/post/${item?.id}`}>
-                              {item?.title}
-                            </Link>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-        <div className="sidebar">
-          <div className="sidebar-item"><GetPostWidget /></div>
-          <GetGroupWidget handleGroupClick={handleGroupClick} />
-          <GetJoinedGroupsWidget handleGroupClick={handleGroupClick} />
-          <FriendsList friendType="followers" />
-          <FriendsList friendType="following" />
-        </div>
-      </main>
-      <footer className="footer">
-        <p>&copy; 2024 CommHub. All rights reserved.</p>
-      </footer>
-    </div>
+        </Toolbar>
+         
+      </AppBar>
+      <Box sx={{ display: 'flex', flexDirection: 'row', px: 2, py: 2 }}>
+  <Box sx={{ width: '250px', mr: 2 }}>
+    <FriendsList />
+    <GetJoinedGroupsWidget />
+    <GetPostWidget/>
+  </Box>
+  
+
+  <Box component="main" sx={{ flexGrow: 1, mx: 2 }}>
+    {showCreatePostPage ? (
+      <CreatePost />
+    ) : (
+      <ViewPostPage />
+    )}
+  </Box>
+
+  <Box sx={{ width: '250px', ml: 2 }}>
+    <GetGroupWidget />
+    <MessageList />
+  </Box>
+</Box>
+
+
+      </Box>
   );
 };
 

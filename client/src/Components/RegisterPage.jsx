@@ -2,23 +2,23 @@ import React, { useState } from "react";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import PropTypes from 'prop-types';
+import { Box, Button, Typography, TextField, Link } from '@mui/material';
 
 const RegisterPage = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
   const [registerError, setRegisterError] = useState('');
 
   const registerUser = async () => {
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+    if (!firstName || !lastName || !email || !password) {
       setRegisterError('All fields are required.');
       return;
     }
 
-    if (password !== confirmPassword) {
+    if (!password) {
       setRegisterError('Passwords do not match.');
       return;
     }
@@ -29,7 +29,6 @@ const RegisterPage = () => {
         last_name: lastName,
         email: email,
         password: password,
-        comfirm_password: confirmPassword,
       }, {
         headers: {
           'Content-Type': 'application/json',
@@ -41,7 +40,7 @@ const RegisterPage = () => {
     } catch (error) {
       console.error('Registration error:', error);
       if (error.response) {
-        if (error.response.status === 409) { 
+        if (error.response.status === 409) {
           setRegisterError("Email already exists");
         } else {
           setRegisterError("An unexpected error occurred");
@@ -53,60 +52,91 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="register-container">
-      <div className="register-form">
-        <h2>Create Your Account</h2>
-        <div className="form-group">
-          <input
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+      }}
+    >
+      <Box
+        component="form"
+        sx={{
+          backgroundColor: 'grey',
+          width: '48vw',
+          borderRadius: 2,
+          boxShadow: 3,
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: 8,
+        
+          }}
+        >
+          <Typography variant="h6" sx={{  color: 'white' }}>
+            Create an Account
+          </Typography>
+          <TextField
             type="text"
+            fullWidth
+            label='First Name'
+            sx={{ width: '40vw', backgroundColor: 'white', mb: 2 }}
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            placeholder="First Name"
           />
-        </div>
-        <div className="form-group">
-          <input
+          <TextField
             type="text"
-            value={lastName}
+            fullWidth
+            label='Last Name'
+            sx={{ width: '40vw', backgroundColor: 'white', mb: 2 }}
+             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            placeholder="Last Name"
+            
           />
-        </div>
-        <div className="form-group">
-          <input
+          <TextField
             type="email"
-            value={email}
+            fullWidth
+            label='Email'
+            sx={{ width: '40vw', backgroundColor: 'white', mb: 2 }}
+             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email Address"
           />
-        </div>
-        <div className="form-group">
-          <input
+          <TextField
             type="password"
+            fullWidth
+            label='Password'
+            sx={{ width: '40vw', backgroundColor: 'white', mb: 4 }}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
           />
-        </div>
-        <div className="form-group">
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Confirm Password"
-          />
-        </div>
-        <div className="form-group">
-          <button className="btn-primary" onClick={registerUser}>Register Account</button>
-        </div>
-        {registerError && (
-          <div className="alert alert-danger" role="alert">
-            {registerError}
-          </div>
-        )}
-        <p className="login-link">Already have an account? <a href="/login">Login</a></p>
-      </div>
-    </div>
+          <Button
+            sx={{
+              backgroundColor: 'deepskyblue',
+              padding: 2,
+              marginBottom: 2,
+              width: '20vw',
+              color: 'white',
+              '&:hover': {
+                backgroundColor: 'skyblue',
+              },
+            }}
+            onClick={registerUser}
+          >
+            Register
+          </Button>
+
+          <Typography color="white">
+            Already Registred? <Link underline="hover" href='/login'>Login</Link>
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
   );
-}
+};
 export default RegisterPage;

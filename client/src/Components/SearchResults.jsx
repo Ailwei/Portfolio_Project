@@ -1,48 +1,49 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Paper
+} from '@mui/material';
 
 const SearchResults = ({ results }) => {
+  const renderSection = (title, items, type) => (
+    <Box mb={4}>
+      <Typography variant="h6" gutterBottom>{title}</Typography>
+      <List component={Paper} variant="outlined">
+        {items.map((item) => (
+          <React.Fragment key={item.id || item.user_id}>
+            <ListItem
+              button
+              component={Link}
+              to={`/${type}/${item.id || item.user_id}`}
+            >
+              <ListItemText
+                primary={item.full_name || item.name || item.title}
+              />
+            </ListItem>
+            <Divider />
+          </React.Fragment>
+        ))}
+      </List>
+    </Box>
+  );
+
   return (
-    <div className="search-results">
-      {results?.users && (
-        <div className="search-results-category">
-          <h2>Users</h2>
-          <ul>
-            {results.users.map(user => (
-              <li key={user.user_id}>
-                <Link to={`/user/${user.user_id}`}>{user.full_name}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+    <Box sx={{ p: 4, maxWidth: 800, mx: 'auto' }}>
+      {results?.users?.length > 0 && renderSection('Users', results.users, 'user')}
+      {results?.groups?.length > 0 && renderSection('Groups', results.groups, 'group')}
+      {results?.posts?.length > 0 && renderSection('Posts', results.posts, 'post')}
+      {(!results?.users?.length && !results?.groups?.length && !results?.posts?.length) && (
+        <Typography variant="body1" color="text.secondary">
+          No results found.
+        </Typography>
       )}
-
-      {results?.groups && (
-        <div className="search-results-category">
-          <h2>Groups</h2>
-          <ul>
-            {results.groups.map(group => (
-              <li key={group.id}>
-                <Link to={`/group/${group.id}`}>{group.name}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {results?.posts && (
-        <div className="search-results-category">
-          <h2>Posts</h2>
-          <ul>
-            {results.posts.map(post => (
-              <li key={post.id}>
-                <Link to={`/post/${post.id}`}>{post.title}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+    </Box>
   );
 };
 

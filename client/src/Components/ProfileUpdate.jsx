@@ -1,124 +1,105 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
+import {
+  Box, TextField, Button, Typography, InputLabel
+} from '@mui/material';
 
 export default function ProfileUpdatePage({ authToken }) {
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [email, setEmail] = useState('');
-    const [profilePicture, setProfilePicture] = useState('');
-    const [userName, setUserName] = useState('');
-    const [currentPassword, setCurrentPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmNewPassword, setConfirmNewPassword] = useState('');
-    const navigate = useNavigate();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [userName, setUserName] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const navigate = useNavigate();
 
-    const fetchUserData = () => {
-        axios.get('http://127.0.0.1:5000/update_profile', {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${authToken}`
-            }
-        })
-        .then(function (response) {
-            const userData = response.data;
-            setFirstName(userData.first_name);
-            setLastName(userData.last_name);
-            setEmail(userData.email);
-            setUserName(userData.userName);
-        })
-        .catch(function (error) {
-            console.error('Failed to fetch user data:', error);
-        });
-    };
+  useEffect(() => {
+    axios.get('http://127.0.0.1:5000/update_profile', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`
+      }
+    })
+    .then((response) => {
+      const userData = response.data;
+      setFirstName(userData.first_name);
+      setLastName(userData.last_name);
+      setEmail(userData.email);
+      setUserName(userData.userName);
+    })
+    .catch((error) => {
+      console.error('Failed to fetch user data:', error);
+    });
+  }, [authToken]);
 
-    useEffect(() => {
-        fetchUserData();
-    }, []);
+  const updateProfile = (e) => {
+    e.preventDefault();
 
-    const updateProfile = () => {
-        if (newPassword !== confirmNewPassword) {
-            alert('New password and confirm password do not match.');
-            return;
-        }
+    if (newPassword !== confirmNewPassword) {
+      alert('New password and confirm password do not match.');
+      return;
+    }
 
-        if (!profilePicture || !['image/jpeg', 'image/png'].includes(profilePicture.type)) {
-            alert('Please select a JPEG or PNG image for the profile picture.');
-            return;
-        }
+    if (profilePicture && !['image/jpeg', 'image/png'].includes(profilePicture.type)) {
+      alert('Please select a JPEG or PNG image for the profile picture.');
+      return;
+    }
 
-        // Convert the file to base64
     const reader = new FileReader();
     reader.readAsDataURL(profilePicture);
     reader.onloadend = () => {
-        const base64Data = reader.result.split(',')[1];
+      const base64Data = reader.result.split(',')[1];
 
-        const requestData = {
-            first_name: firstName,
-            last_name: lastName,
-            email: email,
-            user_name: userName,
-            current_password: currentPassword,
-            new_password: newPassword,
-            confirm_new_password: confirmNewPassword,
-            profile_picture: base64Data,
-            mimetype: profilePicture.type
-        };
+      const requestData = {
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        user_name: userName,
+        current_password: currentPassword,
+        new_password: newPassword,
+        confirm_new_password: confirmNewPassword,
+        profile_picture: base64Data,
+        mimetype: profilePicture.type
+      };
 
-        axios.post('http://127.0.0.1:5000/update_profile', requestData, {
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${authToken}`
-            }
-        })
-        .then(function (response) {
-            navigate("/Dashboard");
-        })
-        .catch(function (error) {
-            if (error.response.status === 401) {
-                alert(error.response.data.error);
-            } else {
-                alert("An error occurred. Please try again later.");
-            }
-        });
+      axios.post('http://127.0.0.1:5000/update_profile', requestData, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
         }
-    }
+      })
+      .then(() => {
+        navigate("/Dashboard");
+      })
+      .catch((error) => {
+        if (error.response?.status === 401) {
+          alert(error.response.data.error);
+        } else {
+          alert("An error occurred. Please try again later.");
+        }
+      });
+    };
+  };
 
-    return (
-        <div>
-            <h1>Update Profile</h1>
-            <form onSubmit={updateProfile}>
-                <div className="mb-3">
-                    <label htmlFor="firstName" className="form-label">First Name</label>
-                    <input type="text" className="form-control" id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="lastName" className="form-label">Last Name</label>
-                    <input type="text" className="form-control" id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email address</label>
-                    <input type="email" className="form-control" id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="profilePicture" className="form-label">Profile Picture</label>
-                    <input type="file" className="form-control" id="profilePicture" onChange={(e) => setProfilePicture(e.target.files[0])} />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="currentPassword" className="form-label">Current Password</label>
-                    <input type="password" className="form-control" id="currentPassword" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="newPassword" className="form-label">New Password</label>
-                    <input type="password" className="form-control" id="newPassword" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="confirmNewPassword" className="form-label">Confirm New Password</label>
-                    <input type="password" className="form-control" id="confirmNewPassword" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} />
-                </div>
-                <button type="submit" className="btn btn-primary">Update Profile</button>
-            </form>
-        </div>
-    );
-    
-    }
+  return (
+    <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4, p: 3, backgroundColor: '#fff', borderRadius: 2, boxShadow: 3 }}>
+      <Typography variant="h4" mb={2}>Update Profile</Typography>
+      <form onSubmit={updateProfile}>
+        <TextField fullWidth margin="normal" label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+        <TextField fullWidth margin="normal" label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+        <TextField fullWidth margin="normal" label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Box mt={2}>
+          <InputLabel>Profile Picture</InputLabel>
+          <input type="file" accept="image/jpeg, image/png" onChange={(e) => setProfilePicture(e.target.files[0])} />
+        </Box>
+        <TextField fullWidth margin="normal" label="Current Password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+        <TextField fullWidth margin="normal" label="New Password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+        <TextField fullWidth margin="normal" label="Confirm New Password" type="password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} />
+        <Button fullWidth variant="contained" sx={{ mt: 3 }} type="submit">Update Profile</Button>
+      </form>
+    </Box>
+  );
+}

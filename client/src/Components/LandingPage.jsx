@@ -1,90 +1,99 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import {
+  AppBar,
+  Toolbar,
+  Button,
+  Typography,
+  Box,
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  CardMedia,
+  Stack,
+  Divider,
+} from '@mui/material';
+import communityImage from '../assets/community.jpg'
 
-import communityImage from './images/community.jpg';
-import loginimage from './images/login.png'
-import Groupsimage from './images/group.png'
-import Sendmessagesimage from './images/sendmessage.png'
-import postsimages from './images/postimages.png'
 
 const LandingPage = () => {
   return (
-    <div className="landing-page">
-      <header>
-        
-        <nav>
-          <ul>
-            <li><Link to="/login">Login</Link></li>
-            <li><Link to="/register">Register</Link></li>
-            <li><Link to="/aboutus">About us</Link></li>
-           
-           
-          </ul>
-        </nav>
-      </header>
-      <section className="hero" style={{ backgroundImage: `url(${communityImage})` }}>
-        <div className="hero-content">
-          <h2>Connect and Interact</h2>
-          <p>Join our platform and engage with a vibrant community of users.</p>
-          <Link to="/register" className="button">Get Started</Link>
-        </div>
-      </section>
-      <h1 style={{ textAlign: 'center' }}>Features</h1>
-      <section className="features">
-     
-      <div className="feature">
-      
-          <h3>Login/Register Acoount</h3>
-          <p>Stay updated with the latest content from users you follow.</p>
-          <img src={loginimage} alt="img" style={{ maxWidth: '100%', height: 'auto' }} />
-        </div>
-        <div className="feature">
-        
-          <h3>Create/Join Groups</h3>
-          <p>Stay updated with the latest content from users you follow.</p>
-          <img src={Groupsimage} alt="img" style={{ maxWidth: '100%', height: 'auto' }} />
-        </div>
-        <div className="feature">
-          <h3>Send messages</h3>
-          <p>Connect with other users through private messaging.</p>
-          <img src={Sendmessagesimage} alt="img" style={{ maxWidth: '100%', height: 'auto' }} />
-        </div>
-        <div className="feature">
-          <h3>Create Posts/add comments </h3>
-          <p>Share your thoughts, ideas, and experiences with the community.</p>
-          <img src={postsimages} alt="img" style={{ maxWidth: '100%', height: 'auto' }} />
-        </div>
-      </section>
-      <section className="testimonials">
-      <h3 style={{
-        color: '#333',
-        fontSize: '24px',
-        fontWeight: 'bold',
-        margin: '10px 0',
-        textDecoration: 'underline', 
-      }}>About</h3>
-        <div className="testimonial" id="about">
-        <h3>Project Description</h3>
-        <p>CommuHub is born out of a personal journey of feeling disconnected in an increasingly digital world. Inspired by my own experiences, I set out to create a solution that prioritizes human connection and inclusivity.</p>
-      <p>CommHub aims to provide users with a centralized platform where they can connect with like-minded individuals, participate in meaningful discussions</p>
-      <p>Through features such as user authentication and registration, profile management, group creation and management, post and comment functionality, and private messaging, I empower users to build and nurture communities tailored to their interests and needs.</p>
-      <p>My journey in developing CommunityHub has been driven by a passion for leveraging technology to bring people together. I believe that by fostering genuine connections and facilitating collaboration, we can create a more connected and compassionate digital world.</p>      </div>
-        <div className="testimonial">
-        <h3>Links</h3>
-        <p>Check out the project repository on <a href="https://github.com/Ailwei/Portfolio_Project">GitHub</a>.</p>
-        </div>
-      </section>
-      <section className="join-community">
-        <h2>Join Our Community Today</h2>
-        <p>Start exploring, connecting, and sharing with our diverse community of users.</p>
-        <Link to="/register" className="button">Get Started</Link>
-      </section>
-      <footer>
-        <p>&copy; 2024 CommHub. All rights reserved.</p>
-      </footer>
-    </div>
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+      <AppBar position="static" sx={{ backgroundColor: '#1976d2' }}>
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            CommHub
+          </Typography>
+          <Button component={Link} to="/login" color="inherit">Login</Button>
+          <Button component={Link} to="/register" color="inherit">Register</Button>
+          <Button component={Link} to="/aboutus" color="inherit">About Us</Button>
+        </Toolbar>
+      </AppBar>
+
+      <Box
+        sx={{
+          backgroundImage: `url(${communityImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          height: '60vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          color: 'black',
+          opacity: 3
+            
+          
+        }}
+      >
+        <Box>
+          <Typography variant="h3" fontWeight="bold">Connect and Interact</Typography>
+<Typography
+  variant="h6"
+  sx={{
+    mt: 2,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    color: 'white',
+    px: 2, 
+    py: 1, 
+    borderRadius: 1,
+    display: 'flex'
+  }}
+>
+  Join our platform and engage with a vibrant community of users.
+</Typography>
+          <Button
+            variant="contained"
+            color="secondary"
+            component={Link}
+            to="/register"
+            sx={{ mt: 10,  backgroundColor: 'rgba(240, 9, 140, 0.7)',mb: 2, '&:hover':{
+              backgroundColor: 'rgba(57, 55, 58, 0.7)'
+              
+
+            } }}
+          >
+            Get Started
+          </Button>
+        </Box>
+      </Box>
+      <Box sx={{ textAlign: 'center', py: 5, backgroundColor: '#e3f2fd' }}>
+        <Typography variant="h4" gutterBottom>Join Our Community Today</Typography>
+        <Typography variant="body1" gutterBottom >
+          Start exploring, connecting, and sharing with our diverse community of users.
+        </Typography>
+        <Button variant="contained" color="primary" component={Link} to="/register" sx={{ mt: 2 }}>
+          Get Started
+        </Button>
+      </Box>
+
+      {/* FOOTER */}
+      <Box sx={{ backgroundColor: '#1976d2', color: 'white', py: 2, textAlign: 'center' }}>
+        <Typography variant="body2">&copy; 2024 CommHub. All rights reserved.</Typography>
+      </Box>
+    </Box>
   );
 };
 
 export default LandingPage;
-

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaUserPlus, FaEnvelope, FaBan } from 'react-icons/fa';
-import defaultProfileImage from './images/profile_default.png';
+import defaultProfileImage from '../assets/profile_default.png';
 
 const ViewProfile = ({ userId }) => {
   const [profile, setProfile] = useState(null);

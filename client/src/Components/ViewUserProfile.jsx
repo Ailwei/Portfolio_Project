@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaUserPlus, FaEnvelope,FaUserMinus, FaBan, FaCheckCircle } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
-import defaultProfileImage from './images/profile_default.png';
+import defaultProfileImage from '../assets/profile_default.png';
 
 
 const ViewUserProfile = () => {

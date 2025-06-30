@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import defaultProfileImage from './images/profile_default.png';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import defaultProfileImage from '../assets/profile_default.png';
+import {
+  Box,
+  Typography,
+  Avatar,
+  IconButton,
+  Card,
+  CardContent,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Tooltip
+} from '@mui/material';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 
 const FriendsList = ({ friendType }) => {
   const [friends, setFriends] = useState([]);
@@ -12,37 +25,20 @@ const FriendsList = ({ friendType }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const getToken = () => {
-      const token = localStorage.getItem('authToken');
-      console.log('Retrieved token:', token);
-      return token;
-    };
-
     const fetchFriends = async () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) return navigate('/login');
+
       try {
-        const token = getToken();
-        if (!token) {
-          console.error('Token is not available, redirecting to login');
-          navigate('/login');
-          return;
-        }
-
-        console.log(`Sending request to fetch current user ${friendType}`);
         const response = await axios.get(`http://127.0.0.1:5000/get_friends?type=${friendType}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        console.log('Response data:', response.data);
         setFriends(response.data || []);
       } catch (error) {
-        if (error.response && error.response.status === 401) {
-          console.error('Unauthorized, redirecting to login');
-          navigate('/login');
-        } else {
+        if (error.response?.status === 401) navigate('/login');
+        else {
           setError(error.message || `Error fetching ${friendType}`);
-          console.error(`Error fetching ${friendType}:`, error);
+          console.error(error);
         }
       } finally {
         setLoading(false);
@@ -50,38 +46,55 @@ const FriendsList = ({ friendType }) => {
     };
 
     fetchFriends();
-  }, [navigate, friendType]);
+  }, [friendType, navigate]);
 
   return (
-    <div className="friends-list-container">
-      <h2>{friendType === 'followers' ? 'Followers' : 'Following'}</h2>
+    <Card sx={{ mt: 3, p: 2 }}>
+      <Box display="flex" alignItems="center" mb={2}>
+        <PeopleAltIcon color="primary" sx={{ mr: 1 }} />
+        <Typography variant="h6">
+          {friendType === 'followers' ? 'Followers' : 'Following'}
+        </Typography>
+      </Box>
+
       {loading ? (
-        <div>Loading...</div>
+        <Typography>Loading...</Typography>
       ) : error ? (
-        <div className="error">{error}</div>
+        <Typography color="error">{error}</Typography>
+      ) : friends.length === 0 ? (
+        <Typography>No {friendType} found</Typography>
       ) : (
-        <ul>
-          {Array.isArray(friends) && friends.length > 0 ? (
-            friends.map((friend) => (
-              <li key={friend.user_id}>
-                <Link to={`/profile/${friend.user_id}`}>
-                  <img
-                    src={friend.profile_picture !== 'default' ? `data:image/jpeg;base64,${friend.profile_picture}` : defaultProfileImage}
-                    alt={`${friend.first_name} ${friend.last_name}`}
-                  />
-                  {friend.first_name} {friend.last_name}
+        <List>
+          {friends.map((friend) => (
+            <ListItem key={friend.user_id} secondaryAction={
+              <Tooltip title="Message">
+                <IconButton component={Link} to={`/messages/${friend.user_id}`} color="primary">
+                  <MailOutlineIcon />
+                </IconButton>
+              </Tooltip>
+            }>
+              <ListItemAvatar>
+                <Avatar
+                  src={
+                    friend.profile_picture !== 'default'
+                      ? `data:image/jpeg;base64,${friend.profile_picture}`
+                      : defaultProfileImage
+                  }
+                  alt={`${friend.first_name} ${friend.last_name}`}
+                />
+              </ListItemAvatar>
+              <ListItemText
+                primary={
+                  <Link to={`/profile/${friend.user_id}`} style={{ textDecoration: 'none', color: '#1976d2' }}>
+                    {friend.first_name} {friend.last_name}
                   </Link>
-                <Link to={`/messages/${friend.user_id}`} className="message-button">
-                  <FontAwesomeIcon icon={faEnvelope} />
-                </Link>
-              </li>
-            ))
-          ) : (
-            <div>No friends found</div>
-          )}
-        </ul>
+                }
+              />
+            </ListItem>
+          ))}
+        </List>
       )}
-    </div>
+    </Card>
   );
 };
 

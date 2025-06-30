@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import { useNavigate, useLocation } from "react-router-dom";
+import {Box, Button, Typography, TextField, Link} from '@mui/material';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -51,38 +52,76 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="login-container">
-            <div className="login-form">
-                <h2>Log Into Your Account</h2>
-                {sessionExpired && (
-                    <div className="alert alert-warning" role="alert">
-                        Your session has expired. Please login again.
-                    </div>
-                )}
-                {loginError && (
-                    <div className="alert alert-danger" role="alert">
-                        {loginError}
-                    </div>
-                )}
-                <form>
-                    <div className="form-group">
-                        <label htmlFor="email">Email address</label>
-                        <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setLoginError(''); }} id="email" className="form-control" placeholder="Enter your email address" />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="password">Password</label>
-                        <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); setLoginError(''); }} id="password" className="form-control" placeholder="Enter your password" />
-                    </div>
-                    <div className="form-group form-check">
-                        <input type="checkbox" className="form-check-input" id="rememberMe" />
-                        <label className="form-check-label" htmlFor="rememberMe">Remember me</label>
-                    </div>
-                    <button type="button" className="btn btn-primary" onClick={logInUser}>Login</button>
-                    <p className="mt-3">Don't have an account? <a href="/register">Register</a></p>
-                </form>
-            </div>
-        </div>
-    );
+        <Box
+      sx={{
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+      }}
+    >
+      <Box
+        component="form"
+        sx={{
+          backgroundColor: 'grey',
+          width: '48vw',
+          borderRadius: 2,
+          boxShadow: 3,
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: 4,
+          }}
+        >
+          <Typography variant="h6" sx={{ padding: 2, color: 'white' }}>
+            Login Into Your Account
+          </Typography>
+
+          <TextField
+            type="email"
+            fullWidth
+            label="Title"
+            sx={{ width: '40vw', backgroundColor: 'white', mb: 2 }}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            type="password"
+            fullWidth
+            label='Password'
+            sx={{ width: '40vw', backgroundColor: 'white', mb: 4 }}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <Button
+            sx={{
+              backgroundColor: 'deepskyblue',
+              padding: 2,
+              marginBottom: 2,
+              width: '40vw',
+              color: 'white',
+              '&:hover': {
+                backgroundColor: 'skyblue',
+              },
+            }}
+            onClick={logInUser}
+          >
+            Login
+          </Button>
+
+          <Typography color="white">
+            Don't have an account? <Link underline="hover" href='/register'>Register</Link>
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
+  );
 };
 
 export default LoginPage;

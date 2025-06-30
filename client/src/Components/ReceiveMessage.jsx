@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  CircularProgress,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+} from '@mui/material';
 
 const ReceiveMessage = ({ userId }) => {
   const [messages, setMessages] = useState([]);
@@ -9,10 +18,7 @@ const ReceiveMessage = ({ userId }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const getToken = () => {
-      const token = localStorage.getItem('authToken');
-      return token;
-    };
+    const getToken = () => localStorage.getItem('authToken');
 
     const fetchMessages = async () => {
       try {
@@ -23,15 +29,13 @@ const ReceiveMessage = ({ userId }) => {
         }
 
         const response = await axios.get(`http://127.0.0.1:5000/get_messages/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         setMessages(response.data);
         console.log('Messages:', response.data.messages);
       } catch (error) {
-        if (error.response && error.response.status === 401) {
+        if (error.response?.status === 401) {
           navigate('/login');
         } else {
           setError(error.message || 'Error fetching messages');
@@ -45,19 +49,38 @@ const ReceiveMessage = ({ userId }) => {
   }, [navigate, userId]);
 
   return (
-    <div>
+    <Box sx={{ mt: 4 }}>
+      <Typography variant="h6" gutterBottom>
+        Received Messages
+      </Typography>
+
       {loading ? (
-        <div>Loading...</div>
+        <Box textAlign="center">
+          <CircularProgress />
+        </Box>
       ) : error ? (
-        <div style={{ color: 'red' }}>{error}</div>
+        <Typography color="error">{error}</Typography>
       ) : (
-        <ul>
-          {messages.map((message) => (
-            <li key={message.id}>{message.content}</li>
-          ))}
-        </ul>
+        <Paper elevation={2} sx={{ p: 2 }}>
+          <List>
+            {messages.length > 0 ? (
+              messages.map((message) => (
+                <ListItem key={message.id} alignItems="flex-start" divider>
+                  <ListItemText
+                    primary={message.content}
+                    secondary={`From: ${message.sender_name || 'Unknown'} • ${new Date(
+                      message.created_at
+                    ).toLocaleString()}`}
+                  />
+                </ListItem>
+              ))
+            ) : (
+              <Typography variant="body2">No messages found.</Typography>
+            )}
+          </List>
+        </Paper>
       )}
-    </div>
+    </Box>
   );
 };
 

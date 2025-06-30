@@ -1,45 +1,73 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  TextField,
+  Select,
+  MenuItem,
+  Button,
+  InputLabel,
+  FormControl
+} from '@mui/material';
 
 function SearchBar() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');
-  
   const [results, setResults] = useState({ users: [], groups: [], posts: [] });
   const navigate = useNavigate();
 
   const handleSearch = async () => {
     try {
-      console.log('Selected category:', category); 
-      const response = await axios.get(`http://127.0.0.1:5000/search?query=${query}&category=${category}`);
+      const response = await axios.get(
+        `http://127.0.0.1:5000/search?query=${query}&category=${category}`
+      );
       setResults(response.data);
+      // You might redirect or show results conditionally
     } catch (error) {
       console.error('Error searching:', error);
     }
   };
 
   return (
-    <div className="search-container">
-      <input
-        type="text"
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: 'center',
+        gap: 2,
+        mb: 3,
+        p: 2
+      }}
+    >
+      <TextField
+        label="Search"
+        variant="outlined"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Enter your search query"
-        className="search-input"
+        fullWidth
       />
-      <select
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        className="search-category"
-      >
-        <option value="all">All</option>
-        <option value="users">Users</option>
-        <option value="groups">Groups</option>
-        <option value="posts">Posts</option>
-      </select>
-      <button onClick={handleSearch} className="search-button">Search</button>
-    </div>
+
+      <FormControl sx={{ minWidth: 120 }}>
+        <InputLabel id="search-category-label">Category</InputLabel>
+        <Select
+          labelId="search-category-label"
+          id="search-category"
+          value={category}
+          label="Category"
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <MenuItem value="all">All</MenuItem>
+          <MenuItem value="users">Users</MenuItem>
+          <MenuItem value="groups">Groups</MenuItem>
+          <MenuItem value="posts">Posts</MenuItem>
+        </Select>
+      </FormControl>
+
+      <Button variant="contained" color="primary" onClick={handleSearch}>
+        Search
+      </Button>
+    </Box>
   );
 }
 

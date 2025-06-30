@@ -1,97 +1,99 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import GetGroupWidget from './GetGroupWidget';
-import GetJoinedGroupsWidget from './getGroupJoined';
-import GroupPost from './groupPost';
+import {
+  Box,
+  Typography,
+  CircularProgress,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Alert
+} from '@mui/material';
 
 const ViewGroup = () => {
   const { groupId } = useParams();
   const [group, setGroup] = useState(null);
+  const [memberships, setMemberships] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [joinedGroups, setJoinedGroups] = useState([]);
-  const [loadingGroup, setLoadingGroup] = useState(true);
-  const [loadingJoinedGroups, setLoadingJoinedGroups] = useState(true);
-  const [errorGroup, setErrorGroup] = useState(null);
-  const [errorJoinedGroups, setErrorJoinedGroups] = useState(null);
-  const [memberships, setMemberships] = useState([]);
 
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+
     const fetchGroupDetails = async () => {
-      const token = localStorage.getItem('authToken');
       try {
-        const response = await axios.get(`http://127.0.0.1:5000/get_group/${groupId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        const groupRes = await axios.get(`http://127.0.0.1:5000/get_group/${groupId}`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        setGroup(response.data.group);
-        setLoading(false);
-      } catch (error) {
-        setError(error.message);
-        setLoading(false);
+        setGroup(groupRes.data.group);
+      } catch (err) {
+        setError('Error loading group details');
       }
     };
 
-    const fetchJoinedGroups = async () => {
-      const token = localStorage.getItem('authToken');
+    const fetchMemberships = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:5000/joined_groups/${groupId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        const memberRes = await axios.get(`http://127.0.0.1:5000/joined_groups/${groupId}`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        console.log('Group details response:', response.data);
-        setJoinedGroups(response.data.groups);
-        setLoadingJoinedGroups(false);
-      } catch (error) {
-        setErrorJoinedGroups(error.message);
-        setLoadingJoinedGroups(false);
+        if (memberRes.data.group?.memberships) {
+          setMemberships(memberRes.data.group.memberships);
+        }
+      } catch (err) {
+        setError('Error loading group members');
       }
     };
 
-    const fetchGroupMemberships = async () => {
-      try {
-        const response = await axios.get(`http://127.0.0.1:5000/joined_groups/${groupId}`);
-        setMemberships(response.data.group.memberships);
-      } catch (error) {
-        console.error('Error fetching group memberships:', error);
-      }
-    };
-
-
-    fetchGroupMemberships();
-    fetchJoinedGroups();
-    fetchGroupDetails();
+    Promise.all([fetchGroupDetails(), fetchMemberships()]).finally(() => setLoading(false));
   }, [groupId]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <Box display="flex" justifyContent="center" mt={4}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <Box mt={4}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
   }
 
   if (!group) {
-    return <div>No group details available</div>;
+    return (
+      <Box mt={4}>
+        <Alert severity="warning">No group details found.</Alert>
+      </Box>
+    );
   }
 
   return (
-    <div>
-    <h2>{group.group_name}</h2>
-    <p>{group.description}</p>
-    <h3>Members:</h3>
-    <ul>
-      {memberships.map((membership) => (
-        <li key={membership.user_id}>
-          {membership.full_name} - {membership.user_role}
-        </li>
-      ))}
-    </ul>
-  </div>
-);
+    <Paper elevation={3} sx={{ p: 4, maxWidth: 800, mx: 'auto', mt: 4 }}>
+      <Typography variant="h4" gutterBottom>{group.group_name}</Typography>
+      <Typography variant="body1" gutterBottom>{group.description}</Typography>
+      <Typography variant="h6" mt={4}>Members</Typography>
+      <List>
+        {memberships.map((member) => (
+          <React.Fragment key={member.user_id}>
+            <ListItem>
+              <ListItemText
+                primary={member.full_name}
+                secondary={`Role: ${member.user_role}`}
+              />
+            </ListItem>
+            <Divider />
+          </React.Fragment>
+        ))}
+      </List>
+    </Paper>
+  );
 };
 
 export default ViewGroup;

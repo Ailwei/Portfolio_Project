@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Paper,
+  Alert
+} from '@mui/material';
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
 
-const CreateGroupForm = (toggleCreateGroupForm) => {
+const CreateGroupForm = () => {
   const [groupData, setGroupData] = useState({
     group: '',
     description: '',
   });
   const [error, setError] = useState('');
   const [token, setToken] = useState('');
-  const navigate = useNavigate()
- 
+  const navigate = useNavigate();
 
   useEffect(() => {
     const authtoken = localStorage.getItem('authToken');
@@ -24,7 +32,6 @@ const CreateGroupForm = (toggleCreateGroupForm) => {
   const createGroup = async () => {
     if (!groupData.group.trim() || !groupData.description.trim()) {
       setError('Group name and description cannot be empty');
-      navigate('/')
       return;
     }
 
@@ -42,7 +49,8 @@ const CreateGroupForm = (toggleCreateGroupForm) => {
         }
       );
       console.log(response.data.message);
-      // Update state or show success message
+      setError('');
+      navigate('/Dashboard'); // redirect or refresh
     } catch (error) {
       console.error('Error creating group:', error);
       setError('Failed to create group');
@@ -50,25 +58,47 @@ const CreateGroupForm = (toggleCreateGroupForm) => {
   };
 
   return (
-  
-        <div className="create-group-form">
-          <input
-            type="text"
-            value={groupData.group}
-            onChange={(e) => setGroupData({ ...groupData, group: e.target.value })}
-            placeholder="Group Name"
-          />
-          <input
-            type="text"
-            value={groupData.description}
-            onChange={(e) => setGroupData({ ...groupData, description: e.target.value })}
-            placeholder="Description"
-          />
-          <button onClick={createGroup}>Create</button>
-          {error && <p>{error}</p>}
-        </div>
-      );
-    };
+    <Paper elevation={3} sx={{ p: 4, maxWidth: 500, mx: 'auto', mt: 4 }}>
+      <Box display="flex" alignItems="center" mb={2}>
+        <GroupAddIcon sx={{ mr: 1, color: 'primary.main' }} />
+        <Typography variant="h5">Create New Group</Typography>
+      </Box>
 
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      <TextField
+        fullWidth
+        label="Group Name"
+        value={groupData.group}
+        onChange={(e) => setGroupData({ ...groupData, group: e.target.value })}
+        margin="normal"
+      />
+      <TextField
+        fullWidth
+        label="Description"
+        multiline
+        rows={3}
+        value={groupData.description}
+        onChange={(e) =>
+          setGroupData({ ...groupData, description: e.target.value })
+        }
+        margin="normal"
+      />
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={createGroup}
+        sx={{ mt: 2 }}
+        fullWidth
+      >
+        Create Group
+      </Button>
+    </Paper>
+  );
+};
 
 export default CreateGroupForm;
