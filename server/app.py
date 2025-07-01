@@ -11,6 +11,7 @@ from base64 import b64encode
 from datetime import datetime
 import traceback
 from dotenv import load_dotenv
+from flask_migrate import Migrate
 
 
 load_dotenv()
@@ -31,7 +32,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
  
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ECHO = True
-  
+
+migrate = Migrate(app, db)
+
 bcrypt = Bcrypt(app) 
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 db.init_app(app)
@@ -597,8 +600,9 @@ def send_message(user_id):
     
     message = Message(
         content=content,
-        user_id=current_user_id,
-        is_sender_inbox=True,
+        sender_id=current_user_id,
+        receiver_id = user_id,
+        is_sender_inbox=False,
     )
     db.session.add(message)
     db.session.commit()
@@ -614,25 +618,31 @@ def get_user_id():
 @app.route('/get_messages/<int:user_id>', methods=["GET"])
 @jwt_required()
 def get_messages(user_id):
-   
     current_user_id = get_jwt_identity()
     if user_id != current_user_id:
         return jsonify({'error': 'Unauthorized access to messages'}), 403
 
-    messages = Message.query.filter_by(user_id=user_id).all()
+    messages = Message.query.filter(
+        (Message.sender_id == current_user_id) | 
+        (Message.receiver_id == current_user_id)
+    ).order_by(Message.created_at).all()
+    logging.info(messages)
 
- 
     messages_data = []
     for message in messages:
-        sender = User.query.get(message.user_id)
-        sender_name = f"{sender.first_name} {sender.last_name}" if sender else "Unknown"
-
-        message_type = 'inbox' if message.is_sender_inbox == 1 else 'outbox'
-        message_info = {'content': message.content, 'created_at': message.created_at, 'type': message_type,'sender_name': sender_name,
-}
+        message_type = "inbox" if message.receiver_id == current_user_id else "outbox"
+        other_user = (
+            User.query.get(message.sender_id) if message_type == "inbox"
+            else User.query.get(message.receiver_id)
+        )
+        sender_name = f"{other_user.first_name} {other_user.last_name}" if other_user else "Unknown"
+        message_info = {
+            'content': message.content,
+            'created_at': message.created_at,
+            'type': message_type,
+            'sender_name': sender_name
+        }
         messages_data.append(message_info)
-        print("Sending messages data:", messages_data) 
-
     return jsonify({'messages': messages_data}), 200
 
 @app.route('/messages/<int:message_id>/reply', methods=["POST"])
