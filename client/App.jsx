@@ -15,7 +15,6 @@ import Menu from './src/Components/Menu';
 import ViewGroup from './src/Components/ViewGroup';
 import GetJoinedGroupsWidget from './src//Components/getGroupJoined';
 import FriendsList from './src/Components/FriendList';
-import MessageComponent from './src/Components/Message';
 import ReceiveMessage from './src/Components/ReceiveMessage';
 import SendMessage from './src/Components/SendMessage'
 import MessageList from './src/Components/MessageList';
@@ -47,7 +46,6 @@ function App() {
                 <Route path="/get_group/:groupId" element={<ViewGroup />} />
                 <Route path="/joined_groups/:groupId" element={<ViewGroup />} />
                 <Route path="/get_friends/:userId" element={<FriendsList />} />
-                <Route path="/messages/:userId" element={<MessageComponent />} />
                 <Route path="/ReceivedMessage/:userId" element={<ReceiveMessage/>} />
                 <Route path="/SendMessage/receiverId" element={<SendMessage/>} />
                 <Route path="/messages/userId" element={<MessageList/>} />

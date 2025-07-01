@@ -15,6 +15,7 @@ import FriendsList from './FriendList';
 import MessageList from './MessageList';
 import { AppBar, Box, Button, Typography, Toolbar, TextField } from '@mui/material';
 import CreatePost from './CreatePostPage';
+import ReceiveMessage from './ReceiveMessage';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -197,7 +198,8 @@ const Dashboard = () => {
       </AppBar>
       <Box sx={{ display: 'flex', flexDirection: 'row', px: 2, py: 2 }}>
   <Box sx={{ width: '250px', mr: 2 }}>
-    <FriendsList />
+<FriendsList friendType="followers" />
+<FriendsList friendType="following" />
     <GetJoinedGroupsWidget />
     <GetPostWidget/>
   </Box>
@@ -213,7 +215,7 @@ const Dashboard = () => {
 
   <Box sx={{ width: '250px', ml: 2 }}>
     <GetGroupWidget />
-    <MessageList />
+    <ReceiveMessage userId={userId} />
   </Box>
 </Box>
 

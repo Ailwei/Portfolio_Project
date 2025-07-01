@@ -30,9 +30,12 @@ const FriendsList = ({ friendType }) => {
       if (!token) return navigate('/login');
 
       try {
+
         const response = await axios.get(`http://127.0.0.1:5000/get_friends?type=${friendType}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log(friendType, friends)
+
         setFriends(response.data || []);
       } catch (error) {
         if (error.response?.status === 401) navigate('/login');

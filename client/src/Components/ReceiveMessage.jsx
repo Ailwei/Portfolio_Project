@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import MessageList from './MessageList';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -18,9 +19,12 @@ const ReceiveMessage = ({ userId }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("User ID passed:", userId);
+
     const getToken = () => localStorage.getItem('authToken');
 
     const fetchMessages = async () => {
+      setError(null);
       try {
         const token = getToken();
         if (!token) {
@@ -30,9 +34,11 @@ const ReceiveMessage = ({ userId }) => {
 
         const response = await axios.get(`http://127.0.0.1:5000/get_messages/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
-        });
 
-        setMessages(response.data);
+        });
+        console.log("user id fetced", userId)
+
+        setMessages(response.data.messages);
         console.log('Messages:', response.data.messages);
       } catch (error) {
         if (error.response?.status === 401) {
@@ -68,10 +74,14 @@ const ReceiveMessage = ({ userId }) => {
                 <ListItem key={message.id} alignItems="flex-start" divider>
                   <ListItemText
                     primary={message.content}
-                    secondary={`From: ${message.sender_name || 'Unknown'} • ${new Date(
-                      message.created_at
-                    ).toLocaleString()}`}
+                    secondary={
+                      (message.type === 'inbox'
+                        ? `From: ${message.sender_name || 'Unknown'}`
+                        : `To: ${message.sender_name || 'Unknown'}`
+                      ) + ` • ${new Date(message.created_at).toLocaleString()}`
+                    }
                   />
+
                 </ListItem>
               ))
             ) : (

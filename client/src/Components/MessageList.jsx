@@ -21,17 +21,17 @@ const MessageList = ({ userId }) => {
   useEffect(() => {
     const getToken = () => localStorage.getItem('authToken');
 
-    const fetchMessages = async () => {
+    const fetchMessages = async ({userId}) => {
+      setError(null);
       try {
         const token = getToken();
         if (!token) return navigate('/login');
 
-        const response = await axios.get(`http://127.0.0.1:5000/messages`, {
+       const response = await axios.get(`http://127.0.0.1:5000/get_messages/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
-          params: { user_id: userId },
         });
 
-        setMessages(response.data);
+        setMessages(response.data.message);
       } catch (err) {
         if (err.response?.status === 401) {
           navigate('/login');
