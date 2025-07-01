@@ -19,7 +19,7 @@ class User(db.Model):
     
     comments = db.relationship('Comments', back_populates="user")
     post = relationship("Post", back_populates="user")
-    message = relationship("Message", back_populates="user")
+    # message = relationship("Message", back_populates="user")
     group = relationship("Group", back_populates="user")
     membership = relationship("Membership", back_populates="user")
     blockuser = relationship("BlockUser", back_populates="user")
@@ -35,6 +35,9 @@ class User(db.Model):
         db.CheckConstraint("comfirm_password IS NOT NULL")
         
     )
+    
+    sent_messages = db.relationship("Message", foreign_keys='Message.sender_id', back_populates="sender")
+    received_messages = db.relationship("Message", foreign_keys='Message.receiver_id', back_populates="receiver")
     
 class Post(db.Model):
     __tablename__ = "post"
@@ -71,10 +74,12 @@ class Message(db.Model):
     content = db.Column(db.Text, nullable=False)
     is_sender_inbox = db.Column(db.Boolean, nullable=False)
     created_at = db.Column(db.DateTime, default=func.now())
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
-    
-    user = relationship("User", back_populates="message")
-    #membership = relationship("Membership", back_populates="message")
+
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=True)
+    receiver_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=True)
+
+    sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_messages")
+    receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_messages")
 
 
 class Group(db.Model):
