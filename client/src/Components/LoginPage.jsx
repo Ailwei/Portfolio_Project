@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
-import { useNavigate, useLocation } from "react-router-dom";
-import {Box, Button, Typography, TextField, Link} from '@mui/material';
-
-const LoginPage = () => {
+import { useLocation } from "react-router-dom";
+import {
+  AppBar,
+  Toolbar,
+  Button,
+  Typography,
+  Box,
+  Link,
+  TextField
+} from '@mui/material';
+const LoginPage = ({setAuthToken, setCurrentView}) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [sessionExpired, setSessionExpired] = useState(false);
-    const [loginError, setLoginError] = useState('');
-    const navigate = useNavigate();
     const location = useLocation();
 
     useEffect(() => {
@@ -18,40 +22,55 @@ const LoginPage = () => {
     }, [location.state]);
 
     const logInUser = async () => {
-        try {
-            if (!email || !password){
-                setLoginError('Email and password are required fields')
-                return;
-            }
-            const response = await axios.post('http://127.0.0.1:5000/login', {
-                email: email,
-                password: password
-            });
-            const authToken = response.data.access_token;
-            localStorage.setItem('authToken', authToken);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+  try {
+    if (!email || !password) {
+      setLoginError('Email and password are required fields');
+      return;
+    }
 
-            setTimeout(() => {
-                localStorage.removeItem('authToken');
-                navigate('/login', { state: { sessionExpired: true } });
-            }, 30 * 60 * 1000); 
+    const response = await axios.post('http://127.0.0.1:5000/login', {
+      email,
+      password,
+    });
 
-            navigate('/Dashboard');
-         
-        } catch (error) {
-            if (error.response) {
-                if (error.response.status === 401) {
-                    setLoginError("Invalid email or password")
-                } else {
-                    setLoginError('An error occurred. Please try again later')
-                }
-            } else {
-                setLoginError('Network error. Please try again later')
-            }
-        }
-    };
+    const authToken = response.data.access_token;
+    localStorage.setItem('authToken', authToken);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+
+    setAuthToken(authToken);
+    setCurrentView('dashboard');
+
+    setTimeout(() => {
+      localStorage.removeItem('authToken');
+      setAuthToken('');
+      setCurrentView('login');
+    }, 30 * 60 * 1000);
+  } catch (error) {
+    if (error.response) {
+      if (error.response.status === 401) {
+        setLoginError('Invalid email or password');
+      } else {
+        setLoginError('An error occurred. Please try again later');
+      }
+    } else {
+      setLoginError('Network error. Please try again later');
+    }
+  }
+};
 
     return (
+      <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+      <AppBar position="static" sx={{ backgroundColor: '#1976d2' }}>
+        <Toolbar>
+          <Typography onClick={() => setCurrentView('landing')} variant="h6" sx={{ flexGrow: 1 }}>
+            CommHub
+          </Typography>
+           <Button onClick={() => setCurrentView('login')} color="inherit">Login</Button>
+          <Button onClick={() => setCurrentView('register')} color="inherit">Register</Button>
+        
+        </Toolbar>
+      </AppBar>
+      
         <Box
       sx={{
         height: '100vh',
@@ -116,10 +135,14 @@ const LoginPage = () => {
           </Button>
 
           <Typography color="white">
-            Don't have an account? <Link underline="hover" href='/register'>Register</Link>
+            Don't have an account? <Link underline="hover" onClick={() => setCurrentView('register')}>Register</Link>
           </Typography>
         </Box>
       </Box>
+    </Box>
+    <Box sx={{ backgroundColor: '#1976d2', color: 'white', py: 2, textAlign: 'center' }}>
+            <Typography variant="body2">&copy; 2024 CommHub. All rights reserved.</Typography>
+          </Box>
     </Box>
   );
 };

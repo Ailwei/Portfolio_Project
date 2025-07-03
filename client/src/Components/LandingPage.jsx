@@ -1,33 +1,25 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import {
   AppBar,
   Toolbar,
   Button,
   Typography,
-  Box,
-  Container,
-  Grid,
-  Card,
-  CardContent,
-  CardMedia,
-  Stack,
-  Divider,
+  Box
 } from '@mui/material';
 import communityImage from '../assets/community.jpg'
 
 
-const LandingPage = () => {
+const LandingPage = ({setCurrentView}) => {
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
       <AppBar position="static" sx={{ backgroundColor: '#1976d2' }}>
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <Typography  onClick={() => setCurrentView('landing')} variant="h6" sx={{ flexGrow: 1 }}>
             CommHub
           </Typography>
-          <Button component={Link} to="/login" color="inherit">Login</Button>
-          <Button component={Link} to="/register" color="inherit">Register</Button>
-          <Button component={Link} to="/aboutus" color="inherit">About Us</Button>
+           <Button onClick={() => setCurrentView('login')} color="inherit">Login</Button>
+          <Button onClick={() => setCurrentView('register')} color="inherit">Register</Button>
+        
         </Toolbar>
       </AppBar>
 
@@ -66,8 +58,7 @@ const LandingPage = () => {
           <Button
             variant="contained"
             color="secondary"
-            component={Link}
-            to="/register"
+            onClick={() => setCurrentView('register')}
             sx={{ mt: 10,  backgroundColor: 'rgba(240, 9, 140, 0.7)',mb: 2, '&:hover':{
               backgroundColor: 'rgba(57, 55, 58, 0.7)'
               
@@ -83,7 +74,7 @@ const LandingPage = () => {
         <Typography variant="body1" gutterBottom >
           Start exploring, connecting, and sharing with our diverse community of users.
         </Typography>
-        <Button variant="contained" color="primary" component={Link} to="/register" sx={{ mt: 2 }}>
+        <Button variant="contained" color="primary" onClick={() => setCurrentView('register')} sx={{ mt: 2 }}>
           Get Started
         </Button>
       </Box>

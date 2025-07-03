@@ -1,10 +1,17 @@
 import React, { useState } from "react";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
-import PropTypes from 'prop-types';
-import { Box, Button, Typography, TextField, Link } from '@mui/material';
+import {
+  AppBar,
+  Toolbar,
+  Button,
+  Typography,
+  Box,
+  Link,
+  TextField
+} from '@mui/material';
 
-const RegisterPage = () => {
+const RegisterPage = ({setCurrentView}) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -52,6 +59,17 @@ const RegisterPage = () => {
   };
 
   return (
+     <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+          <AppBar position="static" sx={{ backgroundColor: '#1976d2' }}>
+            <Toolbar>
+              <Typography onClick={() => setCurrentView('landing')} variant="h6" sx={{ flexGrow: 1 }}>
+                CommHub
+              </Typography>
+               <Button onClick={() => setCurrentView('login')} color="inherit">Login</Button>
+              <Button onClick={() => setCurrentView('register')} color="inherit">Register</Button>
+            
+            </Toolbar>
+          </AppBar>
     <Box
       sx={{
         minHeight: '100vh',
@@ -132,10 +150,14 @@ const RegisterPage = () => {
           </Button>
 
           <Typography color="white">
-            Already Registred? <Link underline="hover" href='/login'>Login</Link>
+            Already Registred? <Link underline="hover" onClick={() => setCurrentView('login')}>Login</Link>
           </Typography>
         </Box>
       </Box>
+    </Box>
+    <Box sx={{ backgroundColor: '#1976d2', color: 'white', py: 2, textAlign: 'center' }}>
+            <Typography variant="body2">&copy; 2024 CommHub. All rights reserved.</Typography>
+          </Box>
     </Box>
   );
 };
