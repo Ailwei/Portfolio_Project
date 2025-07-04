@@ -26,15 +26,16 @@ function App() {
       {currentView === 'dashboard' && (
         <Dashboard authToken={authToken} setAuthToken={setAuthToken} setCurrentView={setCurrentView}/>
       )}
+      {currentView === 'landing' && (
+        <LandingPage setCurrentView={setCurrentView} />
+      )}
       {currentView === 'login' && (
         <LoginPage setAuthToken={setAuthToken} setCurrentView={setCurrentView} />
       )}
       {currentView === 'register' && (
          <RegisterPage setCurrentView={setCurrentView} />
       )}
-      {currentView === 'landing' && (
-        <LandingPage setCurrentView={setCurrentView} />
-      )}
+      
     </BrowserRouter>
   );
 }

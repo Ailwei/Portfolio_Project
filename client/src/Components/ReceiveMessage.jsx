@@ -13,51 +13,50 @@ import {
 } from '@mui/material';
 
 const ReceiveMessage = ({ userId }) => {
-  const [messages, setMessages] = useState([]);
+  const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeUserId, setActiveUserId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("User ID passed:", userId);
-
-    const getToken = () => localStorage.getItem('authToken');
-
     const fetchMessages = async () => {
-      setError(null);
       try {
-        const token = getToken();
+        const token = localStorage.getItem('authToken');
         if (!token) {
           navigate('/login');
           return;
         }
-
-        const response = await axios.get(`http://127.0.0.1:5000/get_messages/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-
-        });
-        console.log("user id fetced", userId)
-
-        setMessages(response.data.messages);
-        console.log('Messages:', response.data.messages);
-      } catch (error) {
-        if (error.response?.status === 401) {
+        const response = await axios.get(
+          `http://127.0.0.1:5000/get_messages/${userId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setThreads(response.data.conversations || []);
+      } catch (err) {
+        if (err.response?.status === 401) {
           navigate('/login');
         } else {
-          setError(error.message || 'Error fetching messages');
+          setError(err.message || 'Error fetching messages');
         }
       } finally {
         setLoading(false);
       }
     };
-
     fetchMessages();
   }, [navigate, userId]);
 
+  const handleSelectThread = (id) => {
+    setActiveUserId(id);
+  };
+
+  const activeThread = threads.find((t) => t.user_id === activeUserId);
+
+  const otherThreads = threads.filter((t) => t.user_id !== activeUserId);
+
   return (
-    <Box sx={{ mt: 4 }}>
+    <Box sx={{ mt: 4, px: 2 }}>
       <Typography variant="h6" gutterBottom>
-        Received Messages
+        Inbox ({threads.length})
       </Typography>
 
       {loading ? (
@@ -66,32 +65,91 @@ const ReceiveMessage = ({ userId }) => {
         </Box>
       ) : error ? (
         <Typography color="error">{error}</Typography>
+      ) : threads.length === 0 ? (
+        <Typography>No conversations found.</Typography>
       ) : (
-        <Paper elevation={2} sx={{ p: 2 }}>
-          <List>
-  {messages.length > 0 ? (
-    messages.map((message) => (
-      <ListItem key={message.message_id} alignItems="flex-start" divider>
-        <ListItemText
-          primary={message.content}
-          secondary={
-            (message.type === 'inbox'
-              ? `From: ${message.sender_name || 'Unknown'}`
-              : `To: ${message.sender_name || 'Unknown'}`) +
-            ` • ${new Date(message.created_at).toLocaleString()}`
-          }
-        />
-        {message.type === 'inbox' && (
-          <ReplyMessageBox messageId={message.message_id} />
-        )}
-      </ListItem>
-    ))
-  ) : (
-    <Typography variant="body2">No messages found.</Typography>
-  )}
-</List>
+        <>
+          {activeThread && (
+            <Paper
+              elevation={3}
+              sx={{
+                mb: 4,
+                p: 2,
+                maxHeight: 400,
+                overflowY: 'auto',
+                borderRadius: 2,
+              }}
+            >
+              <Typography variant="h6" gutterBottom>
+                Chat with {activeThread.user_name}
+              </Typography>
+              <List>
+                {activeThread.messages.map((msg) => (
+                  <ListItem
+                    key={msg.message_id}
+                    sx={{
+                      justifyContent: msg.type === 'inbox' ? 'flex-start' : 'flex-end',
+                      display: 'flex',
+                      mb: 1,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        maxWidth: '75%',
+                        bgcolor: msg.type === 'inbox' ? '#bbdefb' : '#fff9c4',
+                        p: 1.5,
+                        borderRadius: 2,
+                        boxShadow: 1,
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                        {msg.type === 'inbox' ? `From` : `To`} {activeThread.user_name}
+                      </Typography>
+                      <Typography variant="body1">{msg.content}</Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ display: 'block', textAlign: 'right', opacity: 0.6, mt: 0.5 }}
+                      >
+                        {new Date(msg.created_at).toLocaleString()}
+                      </Typography>
+                    </Box>
+                  </ListItem>
+                ))}
+              </List>
 
-        </Paper>
+              <ReplyMessageBox
+                messageId={activeThread.messages[activeThread.messages.length - 1]?.message_id}
+              />
+            </Paper>
+          )}
+
+          <List>
+            {otherThreads.map((thread) => {
+              const lastMsg =
+                thread.messages.length > 0
+                  ? thread.messages[thread.messages.length - 1]
+                  : null;
+              return (
+                <ListItem
+                  button
+                  key={thread.user_id}
+                  onClick={() => handleSelectThread(thread.user_id)}
+                  sx={{
+                    bgcolor: 'background.paper',
+                    mb: 1,
+                    borderRadius: 1,
+                  }}
+                >
+                  <ListItemText
+                    primary={thread.user_name}
+                    secondary={lastMsg?.content || 'No messages yet'}
+                  />
+                </ListItem>
+              );
+            })}
+          </List>
+        </>
       )}
     </Box>
   );

@@ -86,7 +86,6 @@ const Dashboard = ({setAuthToken, authToken, setCurrentView}) => {
 
         <Box sx={{ width: '250px', ml: 2 }}>
           <GetGroupWidget />
-          <ReceiveMessage userId={userId} />
         </Box>
       </Box>
     </Box>

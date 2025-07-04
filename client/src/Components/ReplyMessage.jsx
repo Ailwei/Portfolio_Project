@@ -36,13 +36,11 @@ const ReplyMessageBox = ({ messageId }) => {
   };
 
   return (
-    <Box sx={{ mt: 2 }}>
+    <Box sx={{ mt: 2, position:'relative' }}>
       <Paper elevation={1} sx={{ p: 2 }}>
         <TextField
           label="Reply"
           fullWidth
-          multiline
-          rows={3}
           value={replyContent}
           onChange={(e) => setReplyContent(e.target.value)}
           sx={{ mb: 2 }}
