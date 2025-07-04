@@ -599,6 +599,7 @@ def send_message(user_id):
         return jsonify({'error': 'Sender not found'}), 404
     
     message = Message(
+        
         content=content,
         sender_id=current_user_id,
         receiver_id = user_id,
@@ -615,6 +616,10 @@ def get_user_id():
     current_user_id = get_jwt_identity()
     return {'userId': current_user_id}, 200
 
+from flask import jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from model.model import db, Message, User  # adjust import paths if needed
+
 @app.route('/get_messages/<int:user_id>', methods=["GET"])
 @jwt_required()
 def get_messages(user_id):
@@ -626,24 +631,36 @@ def get_messages(user_id):
         (Message.sender_id == current_user_id) | 
         (Message.receiver_id == current_user_id)
     ).order_by(Message.created_at).all()
-    logging.info(messages)
+    
+    conversations = {} 
 
-    messages_data = []
     for message in messages:
-        message_type = "inbox" if message.receiver_id == current_user_id else "outbox"
-        other_user = (
-            User.query.get(message.sender_id) if message_type == "inbox"
-            else User.query.get(message.receiver_id)
-        )
-        sender_name = f"{other_user.first_name} {other_user.last_name}" if other_user else "Unknown"
-        message_info = {
-            'content': message.content,
-            'created_at': message.created_at,
-            'type': message_type,
-            'sender_name': sender_name
-        }
-        messages_data.append(message_info)
-    return jsonify({'messages': messages_data}), 200
+        if message.sender_id == current_user_id:
+            other_user_id = message.receiver_id
+            message_type = "outbox"
+        else:
+            other_user_id = message.sender_id
+            message_type = "inbox"
+
+        other_user = User.query.get(other_user_id)
+        other_user_name = f"{other_user.first_name} {other_user.last_name}" if other_user else "Unknown"
+
+        if other_user_id not in conversations:
+            conversations[other_user_id] = {
+                "user_id": other_user_id,
+                "user_name": other_user_name,
+                "messages": []
+            }
+
+        conversations[other_user_id]["messages"].append({
+            "message_id": message.message_id,
+            "content": message.content,
+            "created_at": message.created_at,
+            "type": message_type
+        })
+
+    return jsonify({"conversations": list(conversations.values())}), 200
+
 
 @app.route('/messages/<int:message_id>/reply', methods=["POST"])
 @jwt_required()
