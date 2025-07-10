@@ -45,12 +45,48 @@ const ReceiveMessage = ({ userId }) => {
     fetchMessages();
   }, [navigate, userId]);
 
-  const handleSelectThread = (id) => {
+  const markMessagesAsRead = async (messages) => {
+    const token = localStorage.getItem('authToken');
+    const unread = messages.filter(m => m.type === 'inbox' && !m.is_read);
+
+    try {
+      await Promise.all(
+        unread.map(m =>
+          axios.post(
+            `http://127.0.0.1:5000/messages/${m.message_id}/mark_read`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+        )
+      );
+    } catch (err) {
+      console.error("Failed to mark messages as read:", err);
+    }
+  };
+
+  const handleSelectThread = async (id) => {
     setActiveUserId(id);
+    const thread = threads.find(t => t.user_id === id);
+
+    if (thread) {
+      await markMessagesAsRead(thread.messages);
+
+      // Update local state to reflect messages as read
+      const updated = threads.map(t =>
+        t.user_id === id
+          ? {
+              ...t,
+              messages: t.messages.map(m =>
+                m.type === 'inbox' ? { ...m, is_read: true } : m
+              ),
+            }
+          : t
+      );
+      setThreads(updated);
+    }
   };
 
   const activeThread = threads.find((t) => t.user_id === activeUserId);
-
   const otherThreads = threads.filter((t) => t.user_id !== activeUserId);
 
   return (
@@ -88,7 +124,8 @@ const ReceiveMessage = ({ userId }) => {
                   <ListItem
                     key={msg.message_id}
                     sx={{
-                      justifyContent: msg.type === 'inbox' ? 'flex-start' : 'flex-end',
+                      justifyContent:
+                        msg.type === 'inbox' ? 'flex-start' : 'flex-end',
                       display: 'flex',
                       mb: 1,
                     }}
@@ -96,20 +133,30 @@ const ReceiveMessage = ({ userId }) => {
                     <Box
                       sx={{
                         maxWidth: '75%',
-                        bgcolor: msg.type === 'inbox' ? '#bbdefb' : '#fff9c4',
+                        bgcolor:
+                          msg.type === 'inbox' ? '#bbdefb' : '#fff9c4',
                         p: 1.5,
                         borderRadius: 2,
                         boxShadow: 1,
                         wordBreak: 'break-word',
                       }}
                     >
-                      <Typography variant="caption" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                        {msg.type === 'inbox' ? `From` : `To`} {activeThread.user_name}
+                      <Typography
+                        variant="caption"
+                        sx={{ fontWeight: 'bold', mb: 0.5 }}
+                      >
+                        {msg.type === 'inbox' ? `From` : `To`}{' '}
+                        {activeThread.user_name}
                       </Typography>
                       <Typography variant="body1">{msg.content}</Typography>
                       <Typography
                         variant="caption"
-                        sx={{ display: 'block', textAlign: 'right', opacity: 0.6, mt: 0.5 }}
+                        sx={{
+                          display: 'block',
+                          textAlign: 'right',
+                          opacity: 0.6,
+                          mt: 0.5,
+                        }}
                       >
                         {new Date(msg.created_at).toLocaleString()}
                       </Typography>
@@ -119,7 +166,11 @@ const ReceiveMessage = ({ userId }) => {
               </List>
 
               <ReplyMessageBox
-                messageId={activeThread.messages[activeThread.messages.length - 1]?.message_id}
+                messageId={
+                  activeThread.messages[
+                    activeThread.messages.length - 1
+                  ]?.message_id
+                }
               />
             </Paper>
           )}
@@ -130,6 +181,11 @@ const ReceiveMessage = ({ userId }) => {
                 thread.messages.length > 0
                   ? thread.messages[thread.messages.length - 1]
                   : null;
+
+              const hasUnread = thread.messages.some(
+                (msg) => msg.type === 'inbox' && !msg.is_read
+              );
+
               return (
                 <ListItem
                   button
@@ -139,10 +195,32 @@ const ReceiveMessage = ({ userId }) => {
                     bgcolor: 'background.paper',
                     mb: 1,
                     borderRadius: 1,
+                    position: 'relative',
                   }}
                 >
                   <ListItemText
-                    primary={thread.user_name}
+                    primary={
+                      <Box display="flex" alignItems="center">
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight={hasUnread ? 'bold' : 'normal'}
+                        >
+                          {thread.user_name}
+                        </Typography>
+                        {hasUnread && (
+                          <Box
+                            component="span"
+                            sx={{
+                              ml: 1,
+                              width: 8,
+                              height: 8,
+                              bgcolor: 'red',
+                              borderRadius: '50%',
+                            }}
+                          />
+                        )}
+                      </Box>
+                    }
                     secondary={lastMsg?.content || 'No messages yet'}
                   />
                 </ListItem>
