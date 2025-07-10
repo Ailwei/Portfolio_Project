@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
+import {
+  AppBar,
+  Box,
+  Button,
+  Toolbar,
+  Typography,
+  Badge,
+} from '@mui/material';
+import MailIcon from '@mui/icons-material/Mail';
 
 import ViewPostPage from './ViewPostPage';
 import Menu from './Menu';
@@ -14,11 +22,13 @@ import FriendsList from './FriendList';
 import ReceiveMessage from './ReceiveMessage';
 import ViewGroup from './ViewGroup';
 import GroupsComponent from './getGroups';
+import MessageNotifications from './MsgNotifications';
 
-const Dashboard = ({setAuthToken, authToken, setCurrentView}) => {
+const Dashboard = ({ setAuthToken, authToken, setCurrentView }) => {
   const [currentView, setDashBoardView] = useState('/');
   const [userId, setUserId] = useState(null);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const navigate = useNavigate();
 
@@ -28,17 +38,18 @@ const Dashboard = ({setAuthToken, authToken, setCurrentView}) => {
       localStorage.removeItem('authToken');
       setCurrentView('/Login');
     } else {
-      axios.get('http://127.0.0.1:5000/get_user_id', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then(res => setUserId(res.data.userId))
-      .catch(err => console.error('Error fetching userId:', err));
+      axios
+        .get('http://127.0.0.1:5000/get_user_id', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => setUserId(res.data.userId))
+        .catch((err) => console.error('Error fetching userId:', err));
     }
   }, [setCurrentView]);
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
-    setAuthToken(''); 
+    setAuthToken('');
     setCurrentView('landing');
   };
 
@@ -53,7 +64,12 @@ const Dashboard = ({setAuthToken, authToken, setCurrentView}) => {
       case 'viewGroup':
         return <ViewGroup groupId={selectedGroupId} />;
       case 'messages':
-        return <ReceiveMessage userId={userId} />;
+        return (
+          <ReceiveMessage
+            userId={userId}
+            setUnreadCount={setUnreadCount}
+          />
+        );
       default:
         return <ViewPostPage />;
     }
@@ -61,14 +77,54 @@ const Dashboard = ({setAuthToken, authToken, setCurrentView}) => {
 
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+      {userId && (
+        <MessageNotifications
+          userId={userId}
+          onUnreadCountChange={setUnreadCount}
+        />
+      )}
+
       <AppBar position="sticky" sx={{ backgroundColor: '#1976d2' }}>
         <Toolbar>
-          <Typography onClick={() => setCurrentView('landing')} variant="h6" sx={{ flexGrow: 1 }}>CommHub</Typography>
-          <Button onClick={() => setDashBoardView('createPost')} color="inherit">Create Post</Button>
-          <Button onClick={() => setDashBoardView('createGroup')} color="inherit">Create Group</Button>
-          <Button onClick={() => setDashBoardView('groups')} color="inherit">Groups</Button>
-          <Button onClick={() => setDashBoardView('messages')} color="inherit">Messages</Button>
-          <Button onClick={handleLogout} color="inherit">Logout</Button>
+          <Typography
+            onClick={() => setCurrentView('landing')}
+            variant="h6"
+            sx={{ flexGrow: 1, cursor: 'pointer' }}
+          >
+            CommHub
+          </Typography>
+
+          <Button onClick={() => setDashBoardView('createPost')} color="inherit">
+            Create Post
+          </Button>
+          <Button onClick={() => setDashBoardView('createGroup')} color="inherit">
+            Create Group
+          </Button>
+          <Button onClick={() => setDashBoardView('groups')} color="inherit">
+            Groups
+          </Button>
+
+          <Button
+            onClick={() => {
+              setDashBoardView('messages');
+              setUnreadCount(0);
+            }}
+            color="inherit"
+          >
+            <Badge
+  color="error"
+  badgeContent={unreadCount}
+  showZero={true}
+  sx={{ color: 'white' }}
+>
+  <MailIcon />
+</Badge>
+
+          </Button>
+
+          <Button onClick={handleLogout} color="inherit">
+            Logout
+          </Button>
         </Toolbar>
       </AppBar>
 
