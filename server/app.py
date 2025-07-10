@@ -616,10 +616,6 @@ def get_user_id():
     current_user_id = get_jwt_identity()
     return {'userId': current_user_id}, 200
 
-from flask import jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from model.model import db, Message, User  # adjust import paths if needed
-
 @app.route('/get_messages/<int:user_id>', methods=["GET"])
 @jwt_required()
 def get_messages(user_id):
@@ -631,8 +627,8 @@ def get_messages(user_id):
         (Message.sender_id == current_user_id) | 
         (Message.receiver_id == current_user_id)
     ).order_by(Message.created_at).all()
-    
-    conversations = {} 
+
+    conversations = {}
 
     for message in messages:
         if message.sender_id == current_user_id:
@@ -656,10 +652,29 @@ def get_messages(user_id):
             "message_id": message.message_id,
             "content": message.content,
             "created_at": message.created_at,
-            "type": message_type
+            "type": message_type,
+            "is_read": message.is_read
         })
 
     return jsonify({"conversations": list(conversations.values())}), 200
+
+
+@app.route('/messages/<int:message_id>/mark_read', methods=['POST'])
+@jwt_required()
+def mark_message_read(message_id):
+    current_user_id = get_jwt_identity()
+    message = Message.query.get(message_id)
+    if not message:
+        return jsonify({'error': 'Message not found'}), 404
+    
+    if message.receiver_id != current_user_id:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    if not message.is_read:
+        message.is_read = True
+        db.session.commit()
+
+    return jsonify({'message': 'Message marked as read'}), 200
 
 
 @app.route('/messages/<int:message_id>/reply', methods=["POST"])
