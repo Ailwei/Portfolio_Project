@@ -1,7 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, Integer, VARCHAR, Text, LargeBinary, Sequence, ForeignKey, DateTime, func, or_, LargeBinary
+from sqlalchemy import Column, Integer, VARCHAR, Text, Sequence, ForeignKey, DateTime, func, or_, LargeBinary
 from sqlalchemy.orm import relationship
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.dialects.mysql import LONGBLOB
+
 
 
 db = SQLAlchemy()
@@ -46,7 +48,7 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, ForeignKey('user.user_id'))
     group_id = db.Column(db.Integer, ForeignKey('group.group_id'), nullable=True)
-    post_thumbnail = db.Column(db.LargeBinary, nullable=True)
+    post_thumbnail = db.Column(LONGBLOB, nullable=True)
     created_at = db.Column(db.DateTime, default=func.now())
     mimetype = db.Column(db.Text, nullable=False)
     
@@ -74,6 +76,7 @@ class Message(db.Model):
     content = db.Column(db.Text, nullable=False)
     is_sender_inbox = db.Column(db.Boolean, nullable=False)
     created_at = db.Column(db.DateTime, default=func.now())
+    is_read = db.Column(db.Boolean, nullable=False, default=False)
 
     sender_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=True)
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=True)
